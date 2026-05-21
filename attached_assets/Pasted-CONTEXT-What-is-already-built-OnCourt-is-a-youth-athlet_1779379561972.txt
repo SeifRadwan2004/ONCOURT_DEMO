@@ -1,0 +1,43 @@
+CONTEXT — What is already built: OnCourt is a youth athlete talent ID platform. The following already exists and must not be changed:
+* Auth (Coach / Admin login with mock credentials)
+* Coach layout: left sidebar, top bar, and a persistent Group Selector Bar below the top bar on all Coach pages. The selected group is stored in React context and drives all data shown on the page.
+* Admin layout: sidebar + placeholder pages
+* mockData.ts: 10 athletes with chronologicalAge, biologicalAge, phvStatus, anthropometrics. 2 groups ("U14s Zayed", "U12s Academy"). 6 test categories with specific test types. 3 hardcoded test sessions with results for "U14s Zayed".
+* Reusable components: Age Badges, Bio/Chron delta tag, PHV Status Bar, PHV Speedometer Gauge
+* Group creation modal (triggered from the Group Selector Bar)
+
+NOW BUILD: /coach/dashboard — Per Athlete View
+The dashboard has two top-level tabs sitting below the Group Selector Bar:
+* "Per Athlete" (default active)
+* "Group View" (placeholder for now — just show "Coming Soon" when clicked)
+
+PER ATHLETE VIEW LAYOUT:
+Step 1 — Athlete Selector: A dropdown at the top of the view listing all athletes in the currently selected group. Selecting an athlete loads their data below. Default to the first athlete on page load.
+Step 2 — Athlete Header Card: Below the dropdown, show a card for the selected athlete containing:
+* Avatar, name, and the reusable: Chronological Age badge, Biological Age badge, Delta tag, PHV Speedometer Gauge, PHV Status Bar
+Step 3 — View Toggle: Two buttons to switch between:
+* "Card View" (default)
+* "Tabular View"
+
+CARD VIEW:
+Show one card per test type, organized by category (Speed, Agility, Power, Endurance, Strength, Anthropometrics) as section headers.
+Each test card shows:
+* Test name and unit
+* Latest result shown prominently (e.g. 2.34 s)
+* A small mini progression line chart (using Recharts) showing the value across the 3 sessions — x-axis = session date, y-axis = result value
+* Clicking the mini chart expands it into a larger modal or inline expanded panel showing:
+    * Full-size line chart with labeled data points
+    * A table below it: columns = Session Date | Result | Unit
+    * A close/collapse button
+
+TABULAR VIEW:
+A single table showing the selected athlete's results for one session at a time.
+* At the top: a date dropdown listing all 3 session dates. Defaults to the most recent.
+* Table columns: Test Category | Test Name | Result | Unit | Benchmark
+* The Benchmark column shows a placeholder value (hardcode a realistic benchmark per test, e.g. 10m Sprint benchmark: 1.80s) and a colored tag next to it:
+    * 🟢 Above — if result beats the benchmark
+    * 🟡 At — if within 5% of benchmark
+    * 🔴 Below — if result misses benchmark
+* Group rows by category with a subtle category header row
+
+Do not build the Group View yet. Do not modify any existing layout, auth, mock data, or components. All data is still hardcoded mock data.
