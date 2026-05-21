@@ -59,7 +59,17 @@ for (let h = 6; h <= 20; h++) {
 // ─── Types ────────────────────────────────────────────────────────────────────
 type SelectedTests = Record<string, Set<string>>; // category → Set of test names
 
+// Outer shell — renders CoachLayout (which contains GroupProvider) then delegates
+// to BookingForm which is now safely inside the GroupProvider tree.
 export default function CoachBooking() {
+  return (
+    <CoachLayout>
+      <BookingForm />
+    </CoachLayout>
+  );
+}
+
+function BookingForm() {
   const { groups } = useGroup();
 
   // Form state
@@ -152,35 +162,32 @@ export default function CoachBooking() {
   // ─── Success screen ──────────────────────────────────────────────────────────
   if (submitted) {
     return (
-      <CoachLayout>
-        <div className="flex items-center justify-center min-h-full p-8">
-          <div className="text-center space-y-4 max-w-sm">
-            <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-8 h-8 text-green-400" />
-            </div>
-            <h2 className="text-xl font-semibold text-foreground">Test Day Booked!</h2>
-            <p className="text-muted-foreground text-sm">
-              Your test day for <span className="text-foreground font-medium">{selectedGroup?.name}</span> on{" "}
-              <span className="text-foreground font-medium">
-                {date ? format(date, "PPP") : ""} at {time}
-              </span>{" "}
-              has been scheduled.
-            </p>
-            <button
-              onClick={reset}
-              className="mt-2 px-5 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition"
-            >
-              Book Another
-            </button>
+      <div className="flex items-center justify-center min-h-full p-8">
+        <div className="text-center space-y-4 max-w-sm">
+          <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-8 h-8 text-green-400" />
           </div>
+          <h2 className="text-xl font-semibold text-foreground">Test Day Booked!</h2>
+          <p className="text-muted-foreground text-sm">
+            Your test day for <span className="text-foreground font-medium">{selectedGroup?.name}</span> on{" "}
+            <span className="text-foreground font-medium">
+              {date ? format(date, "PPP") : ""} at {time}
+            </span>{" "}
+            has been scheduled.
+          </p>
+          <button
+            onClick={reset}
+            className="mt-2 px-5 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition"
+          >
+            Book Another
+          </button>
         </div>
-      </CoachLayout>
+      </div>
     );
   }
 
   return (
-    <CoachLayout>
-      <div className="p-6">
+    <div className="p-6">
         <div className="mb-6">
           <h1 className="text-xl font-bold text-foreground">Book Test Day</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -489,7 +496,6 @@ export default function CoachBooking() {
           </div>
         </form>
       </div>
-    </CoachLayout>
   );
 }
 
