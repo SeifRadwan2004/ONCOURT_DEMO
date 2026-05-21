@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { GroupProvider } from "@/contexts/GroupContext";
+import { GroupSelectorBar } from "./GroupSelectorBar";
 import {
   BarChart3,
   Users,
@@ -37,7 +39,7 @@ export function CoachLayout({ children }: { children: ReactNode }) {
     navigate("/login");
   };
 
-  return (
+  const layoutContent = (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <aside
@@ -144,9 +146,18 @@ export function CoachLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
+        {/* Group Selector Bar */}
+        <GroupSelectorBar />
+
         {/* Page Content */}
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </div>
+  );
+
+  return (
+    <GroupProvider>
+      {layoutContent}
+    </GroupProvider>
   );
 }
