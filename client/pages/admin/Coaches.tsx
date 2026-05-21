@@ -4,6 +4,7 @@ import { Search, Plus, X, ChevronUp, ChevronDown } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Plan = "Standard" | "Plus" | "Premium";
+type Status = "Trial" | "Active" | "Expired";
 
 interface Entity {
   id: string;
@@ -14,6 +15,9 @@ interface Entity {
   entityName: string;
   numAthletes: number;
   plan: Plan;
+  renewalDate: string;
+  status: Status;
+  revenue: number;
 }
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -27,6 +31,9 @@ const MOCK_ENTITIES: Entity[] = [
     entityName: "Zayed FC Academy",
     numAthletes: 48,
     plan: "Premium",
+    renewalDate: "2026-08-14",
+    status: "Active",
+    revenue: 14400,
   },
   {
     id: "e2",
@@ -37,6 +44,9 @@ const MOCK_ENTITIES: Entity[] = [
     entityName: "Desert Runners Club",
     numAthletes: 22,
     plan: "Standard",
+    renewalDate: "2026-06-01",
+    status: "Trial",
+    revenue: 0,
   },
   {
     id: "e3",
@@ -47,6 +57,9 @@ const MOCK_ENTITIES: Entity[] = [
     entityName: "Emirates Swim Team",
     numAthletes: 35,
     plan: "Plus",
+    renewalDate: "2026-05-10",
+    status: "Expired",
+    revenue: 5400,
   },
   {
     id: "e4",
@@ -57,6 +70,9 @@ const MOCK_ENTITIES: Entity[] = [
     entityName: "Abu Dhabi Ballers",
     numAthletes: 18,
     plan: "Standard",
+    renewalDate: "2026-09-22",
+    status: "Active",
+    revenue: 2880,
   },
   {
     id: "e5",
@@ -67,16 +83,26 @@ const MOCK_ENTITIES: Entity[] = [
     entityName: "Falcon Tennis Academy",
     numAthletes: 61,
     plan: "Premium",
+    renewalDate: "2026-11-30",
+    status: "Active",
+    revenue: 21600,
   },
 ];
 
 const PLANS: Plan[] = ["Standard", "Plus", "Premium"];
+const STATUSES: Status[] = ["Trial", "Active", "Expired"];
 const SPORTS = ["Football", "Athletics", "Swimming", "Basketball", "Tennis", "Rugby", "Cycling", "Other"];
 
 const PLAN_BADGE: Record<Plan, string> = {
   Standard: "bg-secondary text-secondary-foreground",
   Plus: "bg-blue-500/15 text-blue-400 border border-blue-500/30",
   Premium: "bg-orange-500/15 text-orange-400 border border-orange-500/30",
+};
+
+const STATUS_BADGE: Record<Status, string> = {
+  Trial: "bg-yellow-500/15 text-yellow-400 border border-yellow-500/30",
+  Active: "bg-green-500/15 text-green-400 border border-green-500/30",
+  Expired: "bg-red-500/15 text-red-400 border border-red-500/30",
 };
 
 // ─── Empty form state ─────────────────────────────────────────────────────────
@@ -88,14 +114,29 @@ const EMPTY_FORM = {
   entityName: "",
   numAthletes: "",
   plan: "" as Plan | "",
+  renewalDate: "",
+  status: "" as Status | "",
+  revenue: "",
 };
 
 type SortKey = keyof Omit<Entity, "id">;
+
+function fmtDate(iso: string) {
+  if (!iso) return "—";
+  const [y, m, d] = iso.split("-");
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${d} ${months[parseInt(m) - 1]} ${y}`;
+}
+
+function fmtRevenue(n: number) {
+  return n === 0 ? "—" : `AED ${n.toLocaleString()}`;
+}
 
 export default function AdminCoaches() {
   const [entities, setEntities] = useState<Entity[]>(MOCK_ENTITIES);
   const [search, setSearch] = useState("");
   const [planFilter, setPlanFilter] = useState<Plan | "All">("All");
+  const [statusFilter, setStatusFilter] = useState<Status | "All">("All");
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [errors, setErrors] = useState<Partial<Record<keyof typeof EMPTY_FORM, string>>>({});
@@ -113,7 +154,8 @@ export default function AdminCoaches() {
         e.entityName.toLowerCase().includes(q) ||
         e.sport.toLowerCase().includes(q);
       const matchPlan = planFilter === "All" || e.plan === planFilter;
-      return matchSearch && matchPlan;
+      const matchStatus = statusFilter === "All" || e.status === statusFilter;
+      return matchSearch && matchPlan && matchStatus;
     })
     .sort((a, b) => {
       const av = a[sortKey];
@@ -124,6 +166,8 @@ export default function AdminCoaches() {
           : String(av).localeCompare(String(bv));
       return sortDir === "asc" ? cmp : -cmp;
     });
+
+  const totalRevenue = filtered.reduce((s, e) => s + e.revenue, 0);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
@@ -157,16 +201,17 @@ export default function AdminCoaches() {
     else if (isNaN(Number(form.numAthletes)) || Number(form.numAthletes) < 1)
       e.numAthletes = "Must be a positive number";
     if (!form.plan) e.plan = "Required";
+    if (!form.renewalDate) e.renewalDate = "Required";
+    if (!form.status) e.status = "Required";
+    if (form.revenue !== "" && isNaN(Number(form.revenue)))
+      e.revenue = "Must be a number";
     return e;
   }
 
   function handleSubmit(ev: React.FormEvent) {
     ev.preventDefault();
     const e = validate();
-    if (Object.keys(e).length > 0) {
-      setErrors(e);
-      return;
-    }
+    if (Object.keys(e).length > 0) { setErrors(e); return; }
     const newEntity: Entity = {
       id: `e${Date.now()}`,
       repName: form.repName.trim(),
@@ -176,6 +221,9 @@ export default function AdminCoaches() {
       entityName: form.entityName.trim(),
       numAthletes: Number(form.numAthletes),
       plan: form.plan as Plan,
+      renewalDate: form.renewalDate,
+      status: form.status as Status,
+      revenue: form.revenue === "" ? 0 : Number(form.revenue),
     };
     setEntities((prev) => [...prev, newEntity]);
     closeModal();
@@ -196,6 +244,19 @@ export default function AdminCoaches() {
       <ChevronDown className="w-3 h-3 opacity-70 inline ml-1" />
     );
   }
+
+  const COL_DEFS: [SortKey, string][] = [
+    ["repName", "Rep Name"],
+    ["email", "Email"],
+    ["contact", "Contact Number"],
+    ["sport", "Sport"],
+    ["entityName", "Entity Name"],
+    ["numAthletes", "Athletes"],
+    ["plan", "Plan"],
+    ["status", "Status"],
+    ["renewalDate", "Renewal Date"],
+    ["revenue", "Total Revenue"],
+  ];
 
   return (
     <AdminLayout>
@@ -219,7 +280,6 @@ export default function AdminCoaches() {
 
         {/* ── Toolbar ── */}
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Search */}
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <input
@@ -247,6 +307,23 @@ export default function AdminCoaches() {
               </button>
             ))}
           </div>
+
+          {/* Status filter */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {(["All", ...STATUSES] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s as Status | "All")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                  statusFilter === s
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* ── Table ── */}
@@ -255,17 +332,7 @@ export default function AdminCoaches() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/50 border-b border-border">
-                  {(
-                    [
-                      ["repName", "Rep Name"],
-                      ["email", "Email"],
-                      ["contact", "Contact Number"],
-                      ["sport", "Sport"],
-                      ["entityName", "Entity Name"],
-                      ["numAthletes", "Athletes"],
-                      ["plan", "Plan"],
-                    ] as [SortKey, string][]
-                  ).map(([key, label]) => (
+                  {COL_DEFS.map(([key, label]) => (
                     <th
                       key={key}
                       onClick={() => handleSort(key)}
@@ -281,7 +348,7 @@ export default function AdminCoaches() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={COL_DEFS.length}
                       className="px-4 py-10 text-center text-muted-foreground text-sm"
                     >
                       No entities match your search or filters.
@@ -308,24 +375,42 @@ export default function AdminCoaches() {
                       </td>
                       <td className="px-4 py-3 text-center text-foreground">{e.numAthletes}</td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${PLAN_BADGE[e.plan]}`}
-                        >
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${PLAN_BADGE[e.plan]}`}>
                           {e.plan}
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_BADGE[e.status]}`}>
+                          {e.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                        {fmtDate(e.renewalDate)}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-foreground whitespace-nowrap">
+                        {fmtRevenue(e.revenue)}
                       </td>
                     </tr>
                   ))
                 )}
               </tbody>
+
+              {/* ── Revenue footer ── */}
+              {filtered.length > 0 && (
+                <tfoot>
+                  <tr className="bg-muted/40 border-t border-border">
+                    <td colSpan={9} className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide text-right">
+                      Total ({filtered.length} {filtered.length === 1 ? "entity" : "entities"})
+                    </td>
+                    <td className="px-4 py-3 font-bold text-foreground whitespace-nowrap">
+                      AED {totalRevenue.toLocaleString()}
+                    </td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         </div>
-
-        {/* ── Count row ── */}
-        <p className="text-xs text-muted-foreground">
-          Showing {filtered.length} of {entities.length} entities
-        </p>
       </div>
 
       {/* ══════════════════════════════════════════════════════════════
@@ -337,7 +422,6 @@ export default function AdminCoaches() {
           onClick={(ev) => ev.target === ev.currentTarget && closeModal()}
         >
           <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
-            {/* Modal header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
               <h2 className="text-base font-semibold text-foreground">Add New Entity</h2>
               <button
@@ -348,15 +432,11 @@ export default function AdminCoaches() {
               </button>
             </div>
 
-            {/* Modal body */}
             <form
               onSubmit={handleSubmit}
               className="flex-1 overflow-y-auto px-6 py-5 space-y-4"
             >
-              <Field
-                label="Rep Name"
-                error={errors.repName}
-              >
+              <Field label="Rep Name" error={errors.repName}>
                 <input
                   type="text"
                   placeholder="e.g. James Hartley"
@@ -395,9 +475,7 @@ export default function AdminCoaches() {
                   >
                     <option value="">Select sport…</option>
                     {SPORTS.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
+                      <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
                 </Field>
@@ -410,9 +488,7 @@ export default function AdminCoaches() {
                   >
                     <option value="">Select plan…</option>
                     {PLANS.map((p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
+                      <option key={p} value={p}>{p}</option>
                     ))}
                   </select>
                 </Field>
@@ -428,18 +504,54 @@ export default function AdminCoaches() {
                 />
               </Field>
 
-              <Field label="Number of Athletes" error={errors.numAthletes}>
-                <input
-                  type="number"
-                  min={1}
-                  placeholder="e.g. 40"
-                  value={form.numAthletes}
-                  onChange={(ev) => setField("numAthletes", ev.target.value)}
-                  className={inputCls(!!errors.numAthletes)}
-                />
-              </Field>
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Number of Athletes" error={errors.numAthletes}>
+                  <input
+                    type="number"
+                    min={1}
+                    placeholder="e.g. 40"
+                    value={form.numAthletes}
+                    onChange={(ev) => setField("numAthletes", ev.target.value)}
+                    className={inputCls(!!errors.numAthletes)}
+                  />
+                </Field>
 
-              {/* Modal footer */}
+                <Field label="Total Revenue (AED)" error={errors.revenue}>
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="e.g. 5400"
+                    value={form.revenue}
+                    onChange={(ev) => setField("revenue", ev.target.value)}
+                    className={inputCls(!!errors.revenue)}
+                  />
+                </Field>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Status" error={errors.status}>
+                  <select
+                    value={form.status}
+                    onChange={(ev) => setField("status", ev.target.value)}
+                    className={inputCls(!!errors.status)}
+                  >
+                    <option value="">Select status…</option>
+                    {STATUSES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Renewal Date" error={errors.renewalDate}>
+                  <input
+                    type="date"
+                    value={form.renewalDate}
+                    onChange={(ev) => setField("renewalDate", ev.target.value)}
+                    className={inputCls(!!errors.renewalDate)}
+                  />
+                </Field>
+              </div>
+
               <div className="pt-2 flex items-center justify-end gap-3">
                 <button
                   type="button"
