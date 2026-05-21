@@ -1,0 +1,155 @@
+Build the “Test Library” page inside the admin panel.
+
+Structure the library as nested expandable sections:
+	1.	Program Bundle Level
+
+	•	Talent Detection
+	•	Athlete Development
+	•	Professional Practice
+
+	2.	Sport Level
+Inside each bundle, group tests by sport.
+
+Sports:
+	•	Tennis
+	•	Squash
+	•	Padel
+	•	Table Tennis
+	•	Basketball
+	•	Volleyball
+	•	Handball
+	•	Football
+	•	Sprint Swimming
+	•	Distance Swimming
+	•	Sprint Running
+	•	Distance Running
+	•	Boxing
+	•	Karate
+	•	Taekwondo
+	•	Judo
+	•	Wrestling
+	•	BJJ
+	•	Weightlifting
+	•	Artistic Gymnastics
+	•	Rhythmic Gymnastics
+	•	Artistic Swimming
+	•	Triathlon
+	•	Pentathlon
+
+	3.	Category Level
+Inside each sport, group tests by category:
+
+	•	Speed & Acceleration
+	•	Change of Direction & Agility
+	•	Power & Explosiveness
+	•	Strength
+	•	Muscular Endurance
+	•	Aerobic & Anaerobic Capacity
+	•	Stability, Mobility & Injury Screening
+	•	Balance & Coordination
+	•	Movement Literacy
+	•	Reactivity & Neural Coordination
+	•	Rhythm & Timing
+	•	Anthropometrics
+
+Each category should display a database-style list of tests.
+
+Add:
+	•	Search bar
+	•	Filter by sport
+	•	Filter by category
+	•	Filter by status
+	•	“Add Test” button
+
+Clicking “Add Test” opens a multi-section form.
+
+ADD NEW TEST FORM
+
+Section 1 — Identity
+	•	Test Name → free text (required)
+
+Section 2 — Program & Sport
+	•	Bundle → multi-select chips
+			- Talent Detection
+			- Athlete Development
+			- Professional Practice
+	•	Sport Applicability Toggle
+	•	“Applies to All Sports” ON by default
+	•	When OFF, show multi-select sports list (same list as above)
+        •	Category Level (Same list as above)
+
+
+Section 3 — Recorded Output Variables
+Repeatable rows with “+ Add Output Variable”
+
+Fields per row:
+	•	Variable Label (free text)
+	•	Unit dropdown:
+	•	s
+	•	ms
+	•	m
+	•	cm
+	•	mm
+	•	kg
+	•	N
+	•	W
+	•	°
+	•	m/s
+	•	km/h
+	•	W/kg
+	•	N/kg
+	•	kN/m
+	•	reps
+	•	score
+	•	level
+	•	%
+	•	bpm
+	•	index
+	•	other → reveals free text input
+
+Minimum one output variable required.
+
+Section 4 — Derived Metrics
+Toggle:
+“This test produces derived/calculated metrics”
+
+Default OFF.
+
+When ON:
+Show repeatable rows with:
+	•	Metric Name
+	•	Calculation Formula
+	•	Output Unit
+
+Add helper note:
+“Reference recorded variable labels exactly as defined above.”
+
+Section 5 — Administration Requirements
+	•	Minimum Equipment Level: Automated / Elite
+	•	Equipment Name → free text
+	•	Supervision Required Toggle:
+	•	Yes / No
+If Yes:
+show warning flag/message for technicians during test day.
+
+Section 6 — Age & Maturity
+	•	Minimum Age
+	•	Maximum Age
+
+Leave blank for no restriction.
+
+Section 7 — Presentation Type
+Multi-select or selectable cards:
+	•	Line Graph
+	•	Bar Chart
+	•	Pie Chart
+	•	Gauge Meter
+	•	Radar Chart
+	•	Number Card
+	•	Table
+	•	Scatter Plot
+
+Section 8 — Source & Reference (Optional)
+Free text field for Scientific Source / Citation
+
+Do not modify any existing pages, components, or mock data.
