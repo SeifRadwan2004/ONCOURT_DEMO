@@ -1,0 +1,46 @@
+NOW BUILD: Group View Tab on /coach/dashboard
+When the coach clicks the "Group View" tab, replace the "Coming Soon" placeholder with the following layout, all driven by the currently selected group from context.
+
+SECTION 1 — TALENT QUADRANT CHART (top of the page):
+A scatter plot (Recharts) that plots every athlete in the group as a labeled dot. This is the most important visual on the page.
+* X-axis: Z-score vs Chronological Age peers (label: "Chronological Z-Score")
+* Y-axis: Z-score vs Biological Age peers / bioband (label: "Bioband Z-Score")
+* Hardcode realistic mock z-score values per athlete (vary them across the 4 quadrants)
+* A test selector dropdown above the chart lets the coach pick which test to visualize (e.g. 10m Sprint, Vertical Jump, etc.)
+* Draw two reference lines at x=0 and y=0 dividing the chart into 4 quadrants
+* Each quadrant has a permanent label rendered inside it:
+    * Top-left (Low Chron, High Bio) → 🟡 "Hidden Talent"
+    * Top-right (High Chron, High Bio) → 🟢 "Talent"
+    * Bottom-left (Low Chron, Low Bio) → 🔴 "Weak Performer"
+    * Bottom-right (High Chron, Low Bio) → 🟠 "Maturation Spike"
+* Each dot shows the athlete's name as a tooltip on hover (name + both z-score values)
+* Color-code dots by PHV status: Red = Pre-PHV, Amber = In-PHV, Green = Post-PHV
+* Add a legend for the dot colors below the chart
+
+SECTION 2 — FILTERS BAR:
+Below the quadrant chart, a horizontal filter bar with:
+* Filter by Test — dropdown of all test types
+* Filter by PHV Status — multi-select: Pre-PHV / In-PHV / Post-PHV
+* Sort by — dropdown: Chronological Age / Biological Age / Result Value
+* View toggle — two buttons: "Graph View" (default) / "Table View"
+All filters apply to Sections 3 and 4 below. The quadrant chart in Section 1 only responds to the Test selector above it.
+
+SECTION 3 — GRAPH VIEW (default):
+A grouped horizontal bar chart (Recharts) showing all athletes in the group for the selected test, sorted by the selected sort option.
+Each athlete = one bar showing their result value. Color the bar by PHV status (same color scheme as the dots). Athletes name shows when you hover on the bar. Add a vertical reference line showing the group average.
+
+SECTION 4 — TABLE VIEW (shown when toggled):
+A sortable table where each row is an athlete. Columns:
+* Athlete (avatar + name)
+* Chronological Age
+* Biological Age
+* PHV Status (badge)
+* Selected Test Result
+* Unit
+* Benchmark tag (🟢 Above / 🟡 At / 🔴 Below — same logic as Per Athlete tabular view)
+* Chron Z-Score
+* Bio Z-Score
+* Quadrant Label (e.g. "Hidden Talent") with color tag
+Clicking any column header sorts the table by that column.
+
+Do not modify any existing pages, components, or mock data. All z-scores and quadrant assignments are hardcoded mock values. Do not build Test Day Booking or Subscriptions pages yet.

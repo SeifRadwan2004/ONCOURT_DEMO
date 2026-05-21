@@ -20,6 +20,13 @@ import {
   Tooltip,
   ResponsiveContainer,
   LabelList,
+  ScatterChart,
+  Scatter,
+  ZAxis,
+  ReferenceLine,
+  BarChart,
+  Bar,
+  Cell,
 } from "recharts";
 import {
   Dialog,
@@ -699,6 +706,667 @@ function PerAthleteView() {
   );
 }
 
+// ─── Group View mock data ────────────────────────────────────────────────────
+// Hardcoded z-scores per athlete per test (chronZ, bioZ)
+type ZScore = { chronZ: number; bioZ: number };
+const mockZScores: Record<string, Record<string, ZScore>> = {
+  a1: {
+    "10m Sprint":     { chronZ: -0.8, bioZ:  1.2 },
+    "30m Sprint":     { chronZ: -0.7, bioZ:  1.0 },
+    "Vertical Jump":  { chronZ: -0.5, bioZ:  1.4 },
+    "Broad Jump":     { chronZ: -0.6, bioZ:  1.1 },
+    "Grip Right":     { chronZ: -0.4, bioZ:  0.9 },
+    "Yo-Yo Test":     { chronZ: -0.9, bioZ:  1.3 },
+    "5-10-5":         { chronZ: -0.8, bioZ:  1.1 },
+    "T-Test":         { chronZ: -0.7, bioZ:  1.0 },
+    "Push-Ups":       { chronZ: -0.5, bioZ:  0.8 },
+    "Beep Test":      { chronZ: -0.8, bioZ:  1.2 },
+    "Grip Left":      { chronZ: -0.4, bioZ:  1.0 },
+  },
+  a2: {
+    "10m Sprint":     { chronZ:  0.9, bioZ:  1.5 },
+    "30m Sprint":     { chronZ:  0.8, bioZ:  1.3 },
+    "Vertical Jump":  { chronZ:  1.0, bioZ:  1.6 },
+    "Broad Jump":     { chronZ:  0.9, bioZ:  1.4 },
+    "Grip Right":     { chronZ:  0.7, bioZ:  1.2 },
+    "Yo-Yo Test":     { chronZ:  0.8, bioZ:  1.5 },
+    "5-10-5":         { chronZ:  0.9, bioZ:  1.4 },
+    "T-Test":         { chronZ:  0.8, bioZ:  1.3 },
+    "Push-Ups":       { chronZ:  0.7, bioZ:  1.1 },
+    "Beep Test":      { chronZ:  0.9, bioZ:  1.4 },
+    "Grip Left":      { chronZ:  0.6, bioZ:  1.0 },
+  },
+  a4: {
+    "10m Sprint":     { chronZ:  1.4, bioZ: -0.6 },
+    "30m Sprint":     { chronZ:  1.3, bioZ: -0.5 },
+    "Vertical Jump":  { chronZ:  1.5, bioZ: -0.7 },
+    "Broad Jump":     { chronZ:  1.4, bioZ: -0.6 },
+    "Grip Right":     { chronZ:  1.2, bioZ: -0.4 },
+    "Yo-Yo Test":     { chronZ:  1.3, bioZ: -0.5 },
+    "5-10-5":         { chronZ:  1.4, bioZ: -0.6 },
+    "T-Test":         { chronZ:  1.3, bioZ: -0.7 },
+    "Push-Ups":       { chronZ:  1.1, bioZ: -0.5 },
+    "Beep Test":      { chronZ:  1.4, bioZ: -0.6 },
+    "Grip Left":      { chronZ:  1.2, bioZ: -0.5 },
+  },
+  a5: {
+    "10m Sprint":     { chronZ:  0.7, bioZ:  0.8 },
+    "30m Sprint":     { chronZ:  0.6, bioZ:  0.7 },
+    "Vertical Jump":  { chronZ:  0.8, bioZ:  0.9 },
+    "Broad Jump":     { chronZ:  0.7, bioZ:  0.8 },
+    "Grip Right":     { chronZ:  0.5, bioZ:  0.7 },
+    "Yo-Yo Test":     { chronZ:  0.6, bioZ:  0.9 },
+    "5-10-5":         { chronZ:  0.7, bioZ:  0.8 },
+    "T-Test":         { chronZ:  0.6, bioZ:  0.7 },
+    "Push-Ups":       { chronZ:  0.5, bioZ:  0.6 },
+    "Beep Test":      { chronZ:  0.7, bioZ:  0.8 },
+    "Grip Left":      { chronZ:  0.4, bioZ:  0.6 },
+  },
+  a7: {
+    "10m Sprint":     { chronZ: -1.2, bioZ:  0.9 },
+    "30m Sprint":     { chronZ: -1.1, bioZ:  0.8 },
+    "Vertical Jump":  { chronZ: -1.3, bioZ:  1.0 },
+    "Broad Jump":     { chronZ: -1.2, bioZ:  0.9 },
+    "Grip Right":     { chronZ: -1.0, bioZ:  0.7 },
+    "Yo-Yo Test":     { chronZ: -1.1, bioZ:  0.9 },
+    "5-10-5":         { chronZ: -1.2, bioZ:  0.8 },
+    "T-Test":         { chronZ: -1.1, bioZ:  0.9 },
+    "Push-Ups":       { chronZ: -1.0, bioZ:  0.6 },
+    "Beep Test":      { chronZ: -1.2, bioZ:  0.8 },
+    "Grip Left":      { chronZ: -0.9, bioZ:  0.7 },
+  },
+  a8: {
+    "10m Sprint":     { chronZ: -0.5, bioZ: -1.1 },
+    "30m Sprint":     { chronZ: -0.4, bioZ: -1.0 },
+    "Vertical Jump":  { chronZ: -0.6, bioZ: -1.2 },
+    "Broad Jump":     { chronZ: -0.5, bioZ: -1.1 },
+    "Grip Right":     { chronZ: -0.3, bioZ: -0.9 },
+    "Yo-Yo Test":     { chronZ: -0.5, bioZ: -1.1 },
+    "5-10-5":         { chronZ: -0.4, bioZ: -1.0 },
+    "T-Test":         { chronZ: -0.5, bioZ: -1.1 },
+    "Push-Ups":       { chronZ: -0.3, bioZ: -0.8 },
+    "Beep Test":      { chronZ: -0.5, bioZ: -1.0 },
+    "Grip Left":      { chronZ: -0.4, bioZ: -0.9 },
+  },
+  a9: {
+    "10m Sprint":     { chronZ: -0.3, bioZ: -0.7 },
+    "30m Sprint":     { chronZ: -0.2, bioZ: -0.6 },
+    "Vertical Jump":  { chronZ: -0.4, bioZ: -0.8 },
+    "Broad Jump":     { chronZ: -0.3, bioZ: -0.7 },
+    "Grip Right":     { chronZ: -0.2, bioZ: -0.6 },
+    "Yo-Yo Test":     { chronZ: -0.3, bioZ: -0.7 },
+    "5-10-5":         { chronZ: -0.2, bioZ: -0.6 },
+    "T-Test":         { chronZ: -0.3, bioZ: -0.7 },
+    "Push-Ups":       { chronZ: -0.1, bioZ: -0.5 },
+    "Beep Test":      { chronZ: -0.3, bioZ: -0.6 },
+    "Grip Left":      { chronZ: -0.2, bioZ: -0.5 },
+  },
+  a10: {
+    "10m Sprint":     { chronZ:  1.1, bioZ: -1.3 },
+    "30m Sprint":     { chronZ:  1.0, bioZ: -1.2 },
+    "Vertical Jump":  { chronZ:  1.2, bioZ: -1.4 },
+    "Broad Jump":     { chronZ:  1.1, bioZ: -1.3 },
+    "Grip Right":     { chronZ:  0.9, bioZ: -1.1 },
+    "Yo-Yo Test":     { chronZ:  1.0, bioZ: -1.2 },
+    "5-10-5":         { chronZ:  1.1, bioZ: -1.3 },
+    "T-Test":         { chronZ:  1.0, bioZ: -1.2 },
+    "Push-Ups":       { chronZ:  0.8, bioZ: -1.0 },
+    "Beep Test":      { chronZ:  1.1, bioZ: -1.2 },
+    "Grip Left":      { chronZ:  0.9, bioZ: -1.1 },
+  },
+  // U12s athletes (fallback z-scores)
+  a3: {
+    "10m Sprint":     { chronZ: -0.6, bioZ: -0.3 },
+    "30m Sprint":     { chronZ: -0.5, bioZ: -0.2 },
+    "Vertical Jump":  { chronZ: -0.7, bioZ: -0.4 },
+    "Broad Jump":     { chronZ: -0.6, bioZ: -0.3 },
+    "Grip Right":     { chronZ: -0.4, bioZ: -0.2 },
+    "Yo-Yo Test":     { chronZ: -0.6, bioZ: -0.3 },
+    "5-10-5":         { chronZ: -0.5, bioZ: -0.2 },
+    "T-Test":         { chronZ: -0.6, bioZ: -0.3 },
+    "Push-Ups":       { chronZ: -0.3, bioZ: -0.2 },
+    "Beep Test":      { chronZ: -0.6, bioZ: -0.3 },
+    "Grip Left":      { chronZ: -0.4, bioZ: -0.3 },
+  },
+  a6: {
+    "10m Sprint":     { chronZ:  0.4, bioZ:  0.5 },
+    "30m Sprint":     { chronZ:  0.3, bioZ:  0.4 },
+    "Vertical Jump":  { chronZ:  0.5, bioZ:  0.6 },
+    "Broad Jump":     { chronZ:  0.4, bioZ:  0.5 },
+    "Grip Right":     { chronZ:  0.3, bioZ:  0.4 },
+    "Yo-Yo Test":     { chronZ:  0.4, bioZ:  0.5 },
+    "5-10-5":         { chronZ:  0.3, bioZ:  0.4 },
+    "T-Test":         { chronZ:  0.4, bioZ:  0.5 },
+    "Push-Ups":       { chronZ:  0.2, bioZ:  0.3 },
+    "Beep Test":      { chronZ:  0.4, bioZ:  0.5 },
+    "Grip Left":      { chronZ:  0.3, bioZ:  0.4 },
+  },
+};
+
+const PHV_COLORS: Record<string, string> = {
+  "Pre-PHV":  "#ef4444",
+  "In-PHV":   "#f59e0b",
+  "Post-PHV": "#22c55e",
+};
+
+type QuadrantLabel = "Hidden Talent" | "Talent" | "Weak Performer" | "Maturation Spike";
+
+function getQuadrant(chronZ: number, bioZ: number): QuadrantLabel {
+  if (chronZ < 0 && bioZ >= 0) return "Hidden Talent";
+  if (chronZ >= 0 && bioZ >= 0) return "Talent";
+  if (chronZ < 0 && bioZ < 0)  return "Weak Performer";
+  return "Maturation Spike";
+}
+
+const QUADRANT_STYLES: Record<QuadrantLabel, { emoji: string; bg: string; text: string }> = {
+  "Hidden Talent":    { emoji: "🟡", bg: "bg-yellow-500/15", text: "text-yellow-400" },
+  "Talent":           { emoji: "🟢", bg: "bg-green-500/15",  text: "text-green-400" },
+  "Weak Performer":   { emoji: "🔴", bg: "bg-red-500/15",    text: "text-red-400" },
+  "Maturation Spike": { emoji: "🟠", bg: "bg-orange-500/15", text: "text-orange-400" },
+};
+
+// Collect all test names that have z-score data
+const ALL_TESTS = Object.keys(testCategories).flatMap(
+  (cat) => (testCategories as Record<string, { name: string; unit: string }[]>)[cat].map((t) => t.name)
+).filter((t) => !["Height","Weight","Wingspan","Sitting Height"].includes(t));
+
+// Custom scatter dot
+function ScatterDot(props: {
+  cx?: number; cy?: number; payload?: {
+    name: string; phvStatus: string; chronZ: number; bioZ: number;
+  };
+}) {
+  const { cx = 0, cy = 0, payload } = props;
+  if (!payload) return null;
+  const color = PHV_COLORS[payload.phvStatus] ?? "#94a3b8";
+  return (
+    <circle cx={cx} cy={cy} r={7} fill={color} fillOpacity={0.85} stroke="white" strokeWidth={1.5} />
+  );
+}
+
+// Custom scatter tooltip
+function ScatterTooltipContent({ active, payload }: {
+  active?: boolean;
+  payload?: { payload: { name: string; chronZ: number; bioZ: number; phvStatus: string } }[];
+}) {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  return (
+    <div className="bg-card border border-border rounded-lg px-3 py-2 text-xs shadow-lg space-y-1">
+      <p className="font-semibold text-foreground">{d.name}</p>
+      <p className="text-muted-foreground">Chron Z: <span className="text-foreground font-medium">{d.chronZ.toFixed(2)}</span></p>
+      <p className="text-muted-foreground">Bio Z: <span className="text-foreground font-medium">{d.bioZ.toFixed(2)}</span></p>
+      <p className="text-muted-foreground">PHV: <span style={{ color: PHV_COLORS[d.phvStatus] }} className="font-medium">{d.phvStatus}</span></p>
+    </div>
+  );
+}
+
+// Custom bar tooltip
+function BarTooltipContent({ active, payload }: {
+  active?: boolean;
+  payload?: { payload: { name: string; value: number; unit: string; phvStatus: string } }[];
+}) {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  return (
+    <div className="bg-card border border-border rounded-lg px-3 py-2 text-xs shadow-lg space-y-1">
+      <p className="font-semibold text-foreground">{d.name}</p>
+      <p className="text-muted-foreground">Result: <span className="text-foreground font-medium">{d.value} {d.unit}</span></p>
+      <p className="text-muted-foreground">PHV: <span style={{ color: PHV_COLORS[d.phvStatus] }} className="font-medium">{d.phvStatus}</span></p>
+    </div>
+  );
+}
+
+// ─── Group View ──────────────────────────────────────────────────────────────
+function GroupView() {
+  const { selectedGroupId, getGroupAthletes } = useGroup();
+  const athletes = getGroupAthletes(selectedGroupId);
+
+  // Section 1 test selector (independent of filters)
+  const [quadrantTest, setQuadrantTest] = useState(ALL_TESTS[0]);
+
+  // Filters bar state
+  const [filterTest, setFilterTest]       = useState(ALL_TESTS[0]);
+  const [phvFilter, setPhvFilter]         = useState<string[]>(["Pre-PHV", "In-PHV", "Post-PHV"]);
+  const [sortBy, setSortBy]               = useState<"chronologicalAge" | "biologicalAge" | "result">("chronologicalAge");
+  const [viewMode, setViewMode]           = useState<"graph" | "table">("graph");
+  const [tableSortKey, setTableSortKey]   = useState<string>("name");
+  const [tableSortDir, setTableSortDir]   = useState<1 | -1>(1);
+
+  // Build per-athlete result lookup from most recent session
+  const latestResults = useMemo(() => {
+    const map: Record<string, Record<string, { value: number; unit: string }>> = {};
+    const sessions = mockTestSessions
+      .filter((s) => s.groupId === selectedGroupId)
+      .sort((a, b) => b.date.localeCompare(a.date));
+    for (const session of sessions) {
+      for (const r of session.results) {
+        if (!map[r.athleteId]) map[r.athleteId] = {};
+        if (!map[r.athleteId][r.testName]) {
+          const numVal = typeof r.value === "number" ? r.value : parseFloat(String(r.value));
+          map[r.athleteId][r.testName] = { value: numVal, unit: r.unit };
+        }
+      }
+    }
+    // Anthropometrics from athlete object
+    for (const a of athletes) {
+      if (!map[a.id]) map[a.id] = {};
+      map[a.id]["Height"]         ??= { value: a.height,        unit: "cm" };
+      map[a.id]["Weight"]         ??= { value: a.weight,        unit: "kg" };
+      map[a.id]["Wingspan"]       ??= { value: a.wingspan,      unit: "cm" };
+      map[a.id]["Sitting Height"] ??= { value: a.sittingHeight, unit: "cm" };
+    }
+    return map;
+  }, [athletes, selectedGroupId]);
+
+  // Section 1 — scatter data
+  const scatterData = useMemo(() =>
+    athletes.map((a) => {
+      const z = mockZScores[a.id]?.[quadrantTest] ?? { chronZ: 0, bioZ: 0 };
+      return { name: a.name, phvStatus: a.phvStatus, chronZ: z.chronZ, bioZ: z.bioZ };
+    }),
+    [athletes, quadrantTest]
+  );
+
+  // Get unit for selected filter test
+  const filterTestUnit = useMemo(() => {
+    for (const tests of Object.values(testCategories)) {
+      const t = (tests as { name: string; unit: string }[]).find((t) => t.name === filterTest);
+      if (t) return t.unit;
+    }
+    return "";
+  }, [filterTest]);
+
+  // Filtered + sorted athlete rows
+  const filteredAthletes = useMemo(() => {
+    let list = athletes.filter((a) => phvFilter.includes(a.phvStatus));
+
+    list = [...list].sort((a, b) => {
+      if (sortBy === "chronologicalAge") return a.chronologicalAge - b.chronologicalAge;
+      if (sortBy === "biologicalAge")    return a.biologicalAge    - b.biologicalAge;
+      if (sortBy === "result") {
+        const av = latestResults[a.id]?.[filterTest]?.value ?? 0;
+        const bv = latestResults[b.id]?.[filterTest]?.value ?? 0;
+        return av - bv;
+      }
+      return 0;
+    });
+    return list;
+  }, [athletes, phvFilter, sortBy, filterTest, latestResults]);
+
+  // Bar chart data
+  const barData = useMemo(() =>
+    filteredAthletes.map((a) => ({
+      name: a.name,
+      value: latestResults[a.id]?.[filterTest]?.value ?? 0,
+      unit: filterTestUnit,
+      phvStatus: a.phvStatus,
+    })),
+    [filteredAthletes, filterTest, filterTestUnit, latestResults]
+  );
+
+  const groupAvg = barData.length
+    ? barData.reduce((s, d) => s + d.value, 0) / barData.length
+    : 0;
+
+  // Table rows
+  const tableRows = useMemo(() => {
+    let rows = filteredAthletes.map((a) => {
+      const res  = latestResults[a.id]?.[filterTest];
+      const val  = res?.value ?? 0;
+      const unit = res?.unit ?? filterTestUnit;
+      const z    = mockZScores[a.id]?.[filterTest] ?? { chronZ: 0, bioZ: 0 };
+      const quad = getQuadrant(z.chronZ, z.bioZ);
+      const bmStatus = getBenchmarkStatus(filterTest, val);
+      return { athlete: a, val, unit, chronZ: z.chronZ, bioZ: z.bioZ, quad, bmStatus };
+    });
+    rows = [...rows].sort((a, b) => {
+      let av: number | string = 0;
+      let bv: number | string = 0;
+      switch (tableSortKey) {
+        case "name":              av = a.athlete.name; bv = b.athlete.name; break;
+        case "chronologicalAge":  av = a.athlete.chronologicalAge; bv = b.athlete.chronologicalAge; break;
+        case "biologicalAge":     av = a.athlete.biologicalAge; bv = b.athlete.biologicalAge; break;
+        case "phvStatus":         av = a.athlete.phvStatus; bv = b.athlete.phvStatus; break;
+        case "val":               av = a.val; bv = b.val; break;
+        case "chronZ":            av = a.chronZ; bv = b.chronZ; break;
+        case "bioZ":              av = a.bioZ; bv = b.bioZ; break;
+        case "quad":              av = a.quad; bv = b.quad; break;
+        default: break;
+      }
+      if (typeof av === "string") return av.localeCompare(bv as string) * tableSortDir;
+      return ((av as number) - (bv as number)) * tableSortDir;
+    });
+    return rows;
+  }, [filteredAthletes, filterTest, filterTestUnit, latestResults, tableSortKey, tableSortDir]);
+
+  function handleTableSort(key: string) {
+    if (tableSortKey === key) setTableSortDir((d) => (d === 1 ? -1 : 1));
+    else { setTableSortKey(key); setTableSortDir(1); }
+  }
+
+  function SortIcon({ col }: { col: string }) {
+    if (tableSortKey !== col) return <span className="text-muted-foreground/40 ml-1">↕</span>;
+    return <span className="text-primary ml-1">{tableSortDir === 1 ? "↑" : "↓"}</span>;
+  }
+
+  const togglePhv = (status: string) =>
+    setPhvFilter((prev) =>
+      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
+    );
+
+  if (athletes.length === 0) {
+    return <div className="text-center py-16 text-muted-foreground">No athletes in this group.</div>;
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* ── SECTION 1: Talent Quadrant Chart ─────────────────────────────── */}
+      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h2 className="text-base font-semibold text-foreground">Talent Quadrant</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Test:</span>
+            <Select value={quadrantTest} onValueChange={setQuadrantTest}>
+              <SelectTrigger className="w-44 h-8 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ALL_TESTS.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Chart with absolute quadrant labels */}
+        <div className="relative h-80">
+          {/* Quadrant corner labels — positioned to sit inside each quadrant */}
+          <div className="absolute inset-0 pointer-events-none z-10 pl-[52px] pb-[32px]">
+            <div className="relative w-full h-full">
+              <span className="absolute top-2 left-2 text-xs font-semibold text-yellow-400 opacity-70">🟡 Hidden Talent</span>
+              <span className="absolute top-2 right-2 text-xs font-semibold text-green-400 opacity-70">🟢 Talent</span>
+              <span className="absolute bottom-2 left-2 text-xs font-semibold text-red-400 opacity-70">🔴 Weak Performer</span>
+              <span className="absolute bottom-2 right-2 text-xs font-semibold text-orange-400 opacity-70">🟠 Maturation Spike</span>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" className="opacity-10" />
+              <XAxis
+                type="number"
+                dataKey="chronZ"
+                name="Chron Z-Score"
+                domain={[-2, 2]}
+                tickCount={9}
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                label={{ value: "Chronological Z-Score", position: "insideBottom", offset: -10, fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+              />
+              <YAxis
+                type="number"
+                dataKey="bioZ"
+                name="Bioband Z-Score"
+                domain={[-2, 2]}
+                tickCount={9}
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                label={{ value: "Bioband Z-Score", angle: -90, position: "insideLeft", offset: 10, fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+              />
+              <ZAxis range={[60, 60]} />
+              <ReferenceLine x={0} stroke="hsl(var(--border))" strokeWidth={1.5} strokeDasharray="4 4" />
+              <ReferenceLine y={0} stroke="hsl(var(--border))" strokeWidth={1.5} strokeDasharray="4 4" />
+              <Tooltip content={<ScatterTooltipContent />} />
+              <Scatter data={scatterData} shape={<ScatterDot />} />
+            </ScatterChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* PHV Legend */}
+        <div className="flex flex-wrap gap-4 pt-1">
+          {Object.entries(PHV_COLORS).map(([status, color]) => (
+            <div key={status} className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-full inline-block" style={{ background: color }} />
+              <span className="text-xs text-muted-foreground">{status}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── SECTION 2: Filters Bar ─────────────────────────────────────────── */}
+      <div className="bg-card border border-border rounded-xl p-4">
+        <div className="flex flex-wrap gap-4 items-end">
+          {/* Filter by Test */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Filter by Test</label>
+            <Select value={filterTest} onValueChange={setFilterTest}>
+              <SelectTrigger className="w-44 h-8 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ALL_TESTS.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Filter by PHV Status */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">PHV Status</label>
+            <div className="flex gap-2">
+              {(["Pre-PHV", "In-PHV", "Post-PHV"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => togglePhv(s)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${
+                    phvFilter.includes(s)
+                      ? "border-transparent text-white"
+                      : "border-border bg-transparent text-muted-foreground"
+                  }`}
+                  style={phvFilter.includes(s) ? { backgroundColor: PHV_COLORS[s] } : {}}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Sort by */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Sort by</label>
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+              <SelectTrigger className="w-44 h-8 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="chronologicalAge">Chronological Age</SelectItem>
+                <SelectItem value="biologicalAge">Biological Age</SelectItem>
+                <SelectItem value="result">Result Value</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* View Toggle */}
+          <div className="space-y-1.5 ml-auto">
+            <label className="text-xs font-medium text-muted-foreground">View</label>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setViewMode("graph")}
+                className={`px-3 py-1 text-sm rounded-lg font-medium transition-all ${
+                  viewMode === "graph"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                }`}
+              >
+                Graph View
+              </button>
+              <button
+                onClick={() => setViewMode("table")}
+                className={`px-3 py-1 text-sm rounded-lg font-medium transition-all ${
+                  viewMode === "table"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                }`}
+              >
+                Table View
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── SECTION 3 / 4: Graph or Table ─────────────────────────────────── */}
+      {viewMode === "graph" ? (
+        <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-foreground">
+              {filterTest}
+              <span className="text-muted-foreground text-sm font-normal ml-1">({filterTestUnit})</span>
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              Avg: <span className="text-foreground font-medium">{groupAvg.toFixed(2)} {filterTestUnit}</span>
+            </span>
+          </div>
+
+          {barData.filter((d) => d.value > 0).length === 0 ? (
+            <p className="text-center py-10 text-muted-foreground text-sm">No data for this test in the selected group.</p>
+          ) : (
+            <div style={{ height: Math.max(220, filteredAthletes.length * 44) }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={barData}
+                  layout="vertical"
+                  margin={{ top: 5, right: 60, left: 10, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} className="opacity-10" />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    domain={[0, "auto"]}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    width={130}
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                  />
+                  <Tooltip content={<BarTooltipContent />} />
+                  <ReferenceLine
+                    x={groupAvg}
+                    stroke="hsl(var(--primary))"
+                    strokeDasharray="5 3"
+                    strokeWidth={1.5}
+                    label={{ value: "Avg", position: "top", fontSize: 10, fill: "hsl(var(--primary))" }}
+                  />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                    {barData.map((d, i) => (
+                      <Cell key={i} fill={PHV_COLORS[d.phvStatus] ?? "#94a3b8"} fillOpacity={0.8} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* ── TABLE VIEW ──────────────────────────────────────────────────── */
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-muted/50 border-b border-border">
+                {[
+                  { key: "name",             label: "Athlete" },
+                  { key: "chronologicalAge", label: "Chron Age" },
+                  { key: "biologicalAge",    label: "Bio Age" },
+                  { key: "phvStatus",        label: "PHV Status" },
+                  { key: "val",              label: filterTest },
+                  { key: "unit",             label: "Unit" },
+                  { key: "benchmark",        label: "Benchmark" },
+                  { key: "chronZ",           label: "Chron Z" },
+                  { key: "bioZ",             label: "Bio Z" },
+                  { key: "quad",             label: "Quadrant" },
+                ].map(({ key, label }) => (
+                  <th
+                    key={key}
+                    onClick={() => key !== "unit" && key !== "benchmark" && handleTableSort(key)}
+                    className={`px-3 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap ${
+                      key !== "unit" && key !== "benchmark" ? "cursor-pointer hover:text-foreground" : ""
+                    }`}
+                  >
+                    {label}
+                    {key !== "unit" && key !== "benchmark" && <SortIcon col={key} />}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tableRows.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="px-4 py-10 text-center text-muted-foreground">
+                    No athletes match the current filters.
+                  </td>
+                </tr>
+              )}
+              {tableRows.map(({ athlete, val, unit, chronZ, bioZ, quad, bmStatus }) => {
+                const qStyle = QUADRANT_STYLES[quad];
+                return (
+                  <tr key={athlete.id} className="border-t border-border hover:bg-muted/20 transition-colors">
+                    {/* Athlete */}
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={athlete.photo}
+                          alt={athlete.name}
+                          className="w-7 h-7 rounded-full bg-muted flex-shrink-0"
+                        />
+                        <span className="text-foreground font-medium">{athlete.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5 text-foreground">{athlete.chronologicalAge.toFixed(1)}</td>
+                    <td className="px-3 py-2.5 text-foreground">{athlete.biologicalAge.toFixed(1)}</td>
+                    {/* PHV Badge */}
+                    <td className="px-3 py-2.5">
+                      <span
+                        className="inline-block text-xs px-2 py-0.5 rounded-full font-medium text-white"
+                        style={{ backgroundColor: PHV_COLORS[athlete.phvStatus] }}
+                      >
+                        {athlete.phvStatus}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 font-semibold text-foreground">
+                      {val > 0 ? val : "—"}
+                    </td>
+                    <td className="px-3 py-2.5 text-muted-foreground">{unit}</td>
+                    {/* Benchmark */}
+                    <td className="px-3 py-2.5">
+                      {val > 0 && bmStatus ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-muted-foreground">
+                            {benchmarks[filterTest]?.value} {unit}
+                          </span>
+                          <BenchmarkTag status={bmStatus} />
+                        </div>
+                      ) : <span className="text-muted-foreground text-xs">—</span>}
+                    </td>
+                    <td className="px-3 py-2.5 text-foreground font-mono text-xs">{chronZ.toFixed(2)}</td>
+                    <td className="px-3 py-2.5 text-foreground font-mono text-xs">{bioZ.toFixed(2)}</td>
+                    {/* Quadrant */}
+                    <td className="px-3 py-2.5">
+                      <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${qStyle.bg} ${qStyle.text}`}>
+                        {qStyle.emoji} {quad}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Dashboard ──────────────────────────────────────────────────────────
 export default function CoachDashboard() {
   const [topTab, setTopTab] = useState<"per-athlete" | "group">("per-athlete");
@@ -734,16 +1402,7 @@ export default function CoachDashboard() {
         {topTab === "per-athlete" ? (
           <PerAthleteView />
         ) : (
-          <div className="flex flex-col items-center justify-center py-24 gap-3">
-            <div className="text-4xl">🏗️</div>
-            <h3 className="text-xl font-semibold text-foreground">
-              Coming Soon
-            </h3>
-            <p className="text-muted-foreground text-sm text-center max-w-xs">
-              Group View will let you compare all athletes side-by-side. Stay
-              tuned!
-            </p>
-          </div>
+          <GroupView />
         )}
       </div>
     </CoachLayout>
