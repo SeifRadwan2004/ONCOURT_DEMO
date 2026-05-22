@@ -36,17 +36,6 @@ const MOCK_TEST_DAYS: TestDay[] = [
     isPaid: false,
   },
   {
-    id: "td02",
-    requestId: "R002",
-    programName: "Athlete Development Program",
-    date: new Date(2026, 5, 10),
-    time: "14:00",
-    status: "pending",
-    location: "Dubai Sports Complex",
-    tests: ["Yo-Yo Test L1", "Standing Broad Jump"],
-    isPaid: true,
-  },
-  {
     id: "td03",
     requestId: "R003",
     programName: "Professional Practice Program",
@@ -55,7 +44,7 @@ const MOCK_TEST_DAYS: TestDay[] = [
     status: "completed",
     location: "ADFC Training Ground",
     tests: ["30m Sprint", "CMJ", "505 Agility Test"],
-    isPaid: true,
+    isPaid: false,
   },
 ];
 
@@ -148,11 +137,16 @@ export default function AthleteConfirmations() {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
                       <h3 className="text-lg font-semibold text-white">
                         {day.programName}
                       </h3>
                       <StatusBadge status={day.status} />
+                      {!day.isPaid && (
+                        <span className="px-3 py-1 bg-red-500/20 text-red-400 text-sm font-medium rounded-full">
+                          Not Paid
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-4 text-sm text-gray-400">
                       <div className="flex items-center gap-1">
