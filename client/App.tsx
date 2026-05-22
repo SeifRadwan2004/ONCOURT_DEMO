@@ -23,6 +23,7 @@ import CoachConfirmations from "./pages/coach/Confirmations";
 // Admin Pages
 import AdminOverview from "./pages/admin/Overview";
 import AdminCoaches from "./pages/admin/Coaches";
+import AdminAthletes from "./pages/admin/Athletes";
 import AdminAnalytics from "./pages/admin/Analytics";
 import AdminConfirmations from "./pages/admin/Confirmations";
 import AdminLibrary from "./pages/admin/Library";
@@ -92,6 +93,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <AdminCoaches />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/athletes"
+      element={
+        <ProtectedRoute>
+          <AdminAthletes />
         </ProtectedRoute>
       }
     />
