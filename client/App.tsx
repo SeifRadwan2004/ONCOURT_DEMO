@@ -20,6 +20,11 @@ import CoachBooking from "./pages/coach/Booking";
 import CoachSubscriptions from "./pages/coach/Subscriptions";
 import CoachConfirmations from "./pages/coach/Confirmations";
 
+// Athlete Pages
+import AthleteDashboard from "./pages/athlete/Dashboard";
+import AthleteConfirmations from "./pages/athlete/Confirmations";
+import AthleteSubscriptions from "./pages/athlete/Subscriptions";
+
 // Admin Pages
 import AdminOverview from "./pages/admin/Overview";
 import AdminCoaches from "./pages/admin/Coaches";
@@ -75,6 +80,32 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <CoachConfirmations />
+        </ProtectedRoute>
+      }
+    />
+
+    {/* Athlete Routes */}
+    <Route
+      path="/athlete/dashboard"
+      element={
+        <ProtectedRoute>
+          <AthleteDashboard />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/athlete/confirmations"
+      element={
+        <ProtectedRoute>
+          <AthleteConfirmations />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/athlete/subscriptions"
+      element={
+        <ProtectedRoute>
+          <AthleteSubscriptions />
         </ProtectedRoute>
       }
     />

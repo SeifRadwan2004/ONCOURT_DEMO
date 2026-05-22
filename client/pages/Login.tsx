@@ -35,7 +35,13 @@ export default function Login() {
     }
 
     login(email, password, selectedRole);
-    navigate(selectedRole === "coach" ? "/coach/dashboard" : "/admin/overview");
+    if (selectedRole === "coach") {
+      navigate("/coach/dashboard");
+    } else if (selectedRole === "admin") {
+      navigate("/admin/overview");
+    } else if (selectedRole === "athlete") {
+      navigate("/athlete/dashboard");
+    }
   };
 
   return (
@@ -110,7 +116,7 @@ export default function Login() {
               <label className="block text-sm font-medium mb-3">
                 Select Your Role
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <button
                   type="button"
                   onClick={() => setSelectedRole("coach")}
@@ -132,6 +138,17 @@ export default function Login() {
                   }`}
                 >
                   Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole("athlete")}
+                  className={`py-3 px-4 rounded-lg font-medium transition-all ${
+                    selectedRole === "athlete"
+                      ? "bg-accent text-accent-foreground ring-2 ring-accent"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  Athlete
                 </button>
               </div>
             </div>
