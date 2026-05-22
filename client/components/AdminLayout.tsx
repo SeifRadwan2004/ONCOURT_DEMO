@@ -9,6 +9,7 @@ import {
   BookOpen,
   LogOut,
   Menu,
+  PlayCircle,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -17,6 +18,7 @@ const adminNavItems = [
   { label: "Coaches & Clubs", icon: Users, href: "/admin/coaches" },
   { label: "Analytics", icon: BarChart3, href: "/admin/analytics" },
   { label: "Test Day Confirmations", icon: CheckSquare, href: "/admin/confirmations" },
+  { label: "Active Test Days", icon: PlayCircle, href: "/admin/active-test-days" },
   { label: "Test Library", icon: BookOpen, href: "/admin/library" },
 ];
 

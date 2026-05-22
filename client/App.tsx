@@ -25,6 +25,7 @@ import AdminCoaches from "./pages/admin/Coaches";
 import AdminAnalytics from "./pages/admin/Analytics";
 import AdminConfirmations from "./pages/admin/Confirmations";
 import AdminLibrary from "./pages/admin/Library";
+import AdminActiveTestDays from "./pages/admin/ActiveTestDays";
 
 const queryClient = new QueryClient();
 
@@ -106,6 +107,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <AdminLibrary />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/active-test-days"
+      element={
+        <ProtectedRoute>
+          <AdminActiveTestDays />
         </ProtectedRoute>
       }
     />
