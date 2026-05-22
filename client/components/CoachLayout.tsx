@@ -10,6 +10,7 @@ import {
   CreditCard,
   LogOut,
   Menu,
+  Settings,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -30,6 +31,11 @@ const coachNavItems = [
     label: "Subscription & Payments",
     icon: CreditCard,
     href: "/coach/subscriptions",
+  },
+  {
+    label: "Account Settings",
+    icon: Settings,
+    href: "/coach/account-settings",
   },
 ];
 

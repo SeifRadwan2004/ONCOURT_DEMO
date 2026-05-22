@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { BarChart3, Calendar, CreditCard, LogOut, Menu } from "lucide-react";
+import { BarChart3, Calendar, CreditCard, LogOut, Menu, Settings } from "lucide-react";
 import { useState } from "react";
 
 const athleteNavItems = [
@@ -15,6 +15,11 @@ const athleteNavItems = [
     label: "Subscriptions & Payments",
     icon: CreditCard,
     href: "/athlete/subscriptions",
+  },
+  {
+    label: "Account Settings",
+    icon: Settings,
+    href: "/athlete/account-settings",
   },
 ];
 
