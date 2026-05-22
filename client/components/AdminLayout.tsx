@@ -16,6 +16,7 @@ import { useState } from "react";
 const adminNavItems = [
   { label: "Overview", icon: Home, href: "/admin/overview" },
   { label: "Coaches & Clubs", icon: Users, href: "/admin/coaches" },
+  { label: "Athletes & Parents", icon: Users, href: "/admin/athletes" },
   { label: "Analytics", icon: BarChart3, href: "/admin/analytics" },
   { label: "Test Day Confirmations", icon: CheckSquare, href: "/admin/confirmations" },
   { label: "Active Test Days", icon: PlayCircle, href: "/admin/active-test-days" },

@@ -22,6 +22,11 @@ const coachNavItems = [
   },
   { label: "Test Day Booking", icon: Calendar, href: "/coach/booking" },
   {
+    label: "Service Confirmations",
+    icon: CreditCard,
+    href: "/coach/confirmations",
+  },
+  {
     label: "Subscription & Payments",
     icon: CreditCard,
     href: "/coach/subscriptions",
