@@ -1,25 +1,24 @@
 import { AdminLayout } from "@/components/AdminLayout";
-import { useState, useMemo, useId } from "react";
+import { useState, useMemo } from "react";
 import {
   Search, Plus, X, ChevronDown, ChevronRight,
-  AlertTriangle, CheckCircle2, Trash2,
+  AlertTriangle, CheckCircle2, Trash2, Layers,
 } from "lucide-react";
 
 // ═══════════════════════════════════════════════════════════
-//  CONSTANTS
+//  INITIAL VALUES (mutable at runtime — see state below)
 // ═══════════════════════════════════════════════════════════
-const BUNDLES = ["Talent Detection", "Athlete Development", "Professional Practice"] as const;
-type Bundle = typeof BUNDLES[number];
+const INIT_BUNDLES = ["Talent Detection", "Athlete Development", "Professional Practice"];
 
-const SPORTS = [
+const INIT_SPORTS = [
   "Tennis","Squash","Padel","Table Tennis","Basketball","Volleyball","Handball",
   "Football","Sprint Swimming","Distance Swimming","Sprint Running","Distance Running",
   "Boxing","Karate","Taekwondo","Judo","Wrestling","BJJ",
   "Weightlifting","Artistic Gymnastics","Rhythmic Gymnastics","Artistic Swimming",
   "Triathlon","Pentathlon",
-] as const;
+];
 
-const CATEGORIES = [
+const INIT_CATEGORIES = [
   "Speed & Acceleration",
   "Change of Direction & Agility",
   "Power & Explosiveness",
@@ -32,19 +31,18 @@ const CATEGORIES = [
   "Reactivity & Neural Coordination",
   "Rhythm & Timing",
   "Anthropometrics",
-] as const;
-type Category = typeof CATEGORIES[number];
+];
 
 const UNITS = [
   "s","ms","m","cm","mm","kg","N","W","°",
   "m/s","km/h","W/kg","N/kg","kN/m",
   "reps","score","level","%","bpm","index","other",
-] as const;
+];
 
 const PRESENTATION_TYPES = [
   "Line Graph","Bar Chart","Pie Chart","Gauge Meter",
   "Radar Chart","Number Card","Table","Scatter Plot",
-] as const;
+];
 
 const STATUSES = ["Active","Draft","Archived"] as const;
 type Status = typeof STATUSES[number];
@@ -56,8 +54,8 @@ const EQUIP_LEVELS = ["Automated","Elite"] as const;
 interface OutputVar  { id:string; label:string; unit:string; otherUnit:string }
 interface DerivedRow { id:string; name:string; formula:string; unit:string }
 interface LibTest {
-  id:string; name:string; bundles:Bundle[]; sports:string[]|"all";
-  category:Category; equipmentLevel:"Automated"|"Elite";
+  id:string; name:string; bundles:string[]; sports:string[]|"all";
+  category:string; equipmentLevel:"Automated"|"Elite";
   supervisionRequired:boolean; minAge:number|null; maxAge:number|null;
   presentationTypes:string[]; status:Status;
   outputVars:{label:string;unit:string}[]; citation?:string;
@@ -79,7 +77,7 @@ const MOCK_TESTS: LibTest[] = [
   { id:"t10", name:"Grip Strength", bundles:["Talent Detection","Athlete Development","Professional Practice"], sports:"all", category:"Strength", equipmentLevel:"Automated", supervisionRequired:false, minAge:8, maxAge:null, presentationTypes:["Number Card","Gauge Meter","Bar Chart"], status:"Active", outputVars:[{label:"Dominant Hand",unit:"kg"},{label:"Non-Dominant Hand",unit:"kg"}] },
   { id:"t11", name:"1RM Back Squat", bundles:["Professional Practice"], sports:["Weightlifting","Wrestling","Judo","BJJ"], category:"Strength", equipmentLevel:"Elite", supervisionRequired:true, minAge:16, maxAge:null, presentationTypes:["Number Card","Line Graph"], status:"Active", outputVars:[{label:"1RM",unit:"kg"},{label:"1RM/BW Ratio",unit:"index"}], citation:"Baechle & Earle (2008)" },
   { id:"t12", name:"Push-Up Endurance Test", bundles:["Talent Detection","Athlete Development"], sports:["Boxing","Karate","Wrestling","BJJ","Taekwondo","Judo"], category:"Muscular Endurance", equipmentLevel:"Elite", supervisionRequired:true, minAge:10, maxAge:null, presentationTypes:["Number Card","Bar Chart"], status:"Active", outputVars:[{label:"Repetitions",unit:"reps"}] },
-  { id:"t13", name:"Yo-Yo Intermittent Recovery Test L1", bundles:["Talent Detection","Athlete Development"], sports:["Football","Basketball","Handball","Volleyball","Hockey"], category:"Aerobic & Anaerobic Capacity", equipmentLevel:"Elite", supervisionRequired:true, minAge:12, maxAge:null, presentationTypes:["Line Graph","Bar Chart","Number Card"], status:"Active", outputVars:[{label:"Level",unit:"level"},{label:"Total Distance",unit:"m"},{label:"VO2max Est",unit:"score"}], citation:"Bangsbo et al. (2008)" },
+  { id:"t13", name:"Yo-Yo Intermittent Recovery Test L1", bundles:["Talent Detection","Athlete Development"], sports:["Football","Basketball","Handball","Volleyball"], category:"Aerobic & Anaerobic Capacity", equipmentLevel:"Elite", supervisionRequired:true, minAge:12, maxAge:null, presentationTypes:["Line Graph","Bar Chart","Number Card"], status:"Active", outputVars:[{label:"Level",unit:"level"},{label:"Total Distance",unit:"m"},{label:"VO2max Est",unit:"score"}], citation:"Bangsbo et al. (2008)" },
   { id:"t14", name:"Cooper 12-min Run Test", bundles:["Talent Detection","Athlete Development"], sports:["Distance Running","Triathlon","Pentathlon"], category:"Aerobic & Anaerobic Capacity", equipmentLevel:"Elite", supervisionRequired:true, minAge:12, maxAge:null, presentationTypes:["Number Card","Line Graph"], status:"Active", outputVars:[{label:"Distance",unit:"m"},{label:"VO2max Est",unit:"score"}], citation:"Cooper (1968)" },
   { id:"t15", name:"400m Swim Time Trial", bundles:["Athlete Development","Professional Practice"], sports:["Distance Swimming","Triathlon","Artistic Swimming"], category:"Aerobic & Anaerobic Capacity", equipmentLevel:"Automated", supervisionRequired:true, minAge:10, maxAge:null, presentationTypes:["Line Graph","Number Card"], status:"Active", outputVars:[{label:"Time",unit:"s"},{label:"Stroke Rate",unit:"score"}] },
   { id:"t16", name:"Functional Movement Screen (FMS)", bundles:["Talent Detection","Athlete Development","Professional Practice"], sports:"all", category:"Stability, Mobility & Injury Screening", equipmentLevel:"Elite", supervisionRequired:true, minAge:10, maxAge:null, presentationTypes:["Radar Chart","Number Card","Table"], status:"Active", outputVars:[{label:"Total Score",unit:"score"},{label:"Deep Squat",unit:"score"},{label:"Hurdle Step",unit:"score"},{label:"Inline Lunge",unit:"score"},{label:"Shoulder Mobility",unit:"score"}], citation:"Cook et al. (2006)" },
@@ -94,7 +92,7 @@ const MOCK_TESTS: LibTest[] = [
   { id:"t25", name:"50m Freestyle Sprint", bundles:["Talent Detection","Professional Practice"], sports:["Sprint Swimming","Triathlon","Pentathlon"], category:"Speed & Acceleration", equipmentLevel:"Automated", supervisionRequired:true, minAge:10, maxAge:null, presentationTypes:["Line Graph","Number Card"], status:"Active", outputVars:[{label:"Time",unit:"s"},{label:"Stroke Count",unit:"reps"},{label:"Stroke Rate",unit:"score"}] },
   { id:"t26", name:"Clean & Jerk Max", bundles:["Professional Practice"], sports:["Weightlifting","Wrestling"], category:"Power & Explosiveness", equipmentLevel:"Elite", supervisionRequired:true, minAge:16, maxAge:null, presentationTypes:["Number Card","Line Graph"], status:"Active", outputVars:[{label:"Max Load",unit:"kg"},{label:"Sinclair Score",unit:"score"}], citation:"IWF Technical & Competition Rules (2022)" },
   { id:"t27", name:"Pull-Up Endurance", bundles:["Talent Detection","Athlete Development"], sports:["Wrestling","BJJ","Judo","Artistic Gymnastics"], category:"Muscular Endurance", equipmentLevel:"Elite", supervisionRequired:false, minAge:10, maxAge:null, presentationTypes:["Number Card","Bar Chart"], status:"Active", outputVars:[{label:"Repetitions",unit:"reps"}] },
-  { id:"t28", name:"Wingate Anaerobic Test", bundles:["Professional Practice"], sports:["Sprint Running","Sprint Swimming","Cycling","Boxing","Wrestling"], category:"Aerobic & Anaerobic Capacity", equipmentLevel:"Automated", supervisionRequired:true, minAge:14, maxAge:null, presentationTypes:["Line Graph","Number Card","Gauge Meter"], status:"Draft", outputVars:[{label:"Peak Power",unit:"W"},{label:"Mean Power",unit:"W"},{label:"Fatigue Index",unit:"%"}], citation:"Inbar et al. (1996)" },
+  { id:"t28", name:"Wingate Anaerobic Test", bundles:["Professional Practice"], sports:["Sprint Running","Sprint Swimming","Boxing","Wrestling"], category:"Aerobic & Anaerobic Capacity", equipmentLevel:"Automated", supervisionRequired:true, minAge:14, maxAge:null, presentationTypes:["Line Graph","Number Card","Gauge Meter"], status:"Draft", outputVars:[{label:"Peak Power",unit:"W"},{label:"Mean Power",unit:"W"},{label:"Fatigue Index",unit:"%"}], citation:"Inbar et al. (1996)" },
 ];
 
 // ═══════════════════════════════════════════════════════════
@@ -105,10 +103,10 @@ const newRow  = (): DerivedRow => ({ id: crypto.randomUUID(), name:"", formula:"
 
 const EMPTY_FORM = () => ({
   name: "",
-  bundles: [] as Bundle[],
+  bundles: [] as string[],
   allSports: true,
   sports: [] as string[],
-  category: "" as Category | "",
+  category: "",
   outputVars: [newVar()] as OutputVar[],
   hasDerived: false,
   derivedRows: [] as DerivedRow[],
@@ -122,27 +120,42 @@ const EMPTY_FORM = () => ({
   status: "Draft" as Status,
 });
 
-// ─── Status badge ────────────────────────────────────────────
 const STATUS_CLS: Record<Status, string> = {
   Active:   "bg-green-500/15 text-green-400 border border-green-500/30",
   Draft:    "bg-yellow-500/15 text-yellow-400 border border-yellow-500/30",
   Archived: "bg-red-500/15 text-red-400 border border-red-500/30",
 };
 
+type FieldKind = "Bundle" | "Category" | "Sport";
+
 // ═══════════════════════════════════════════════════════════
 //  MAIN PAGE
 // ═══════════════════════════════════════════════════════════
 export default function AdminLibrary() {
-  const [tests,      setTests]      = useState<LibTest[]>(MOCK_TESTS);
-  const [search,     setSearch]     = useState("");
-  const [fSport,     setFSport]     = useState("All");
-  const [fCategory,  setFCategory]  = useState("All");
-  const [fStatus,    setFStatus]    = useState("All");
-  const [modalOpen,  setModalOpen]  = useState(false);
-  const [form,       setForm]       = useState(EMPTY_FORM());
-  const [errors,     setErrors]     = useState<Record<string,string>>({});
+  // ── Library lists (mutable) ──────────────────────────────
+  const [bundles,    setBundles]    = useState<string[]>(INIT_BUNDLES);
+  const [sports,     setSports]     = useState<string[]>(INIT_SPORTS);
+  const [categories, setCategories] = useState<string[]>(INIT_CATEGORIES);
 
-  // Expanded state: set of "bundle", "bundle::sport", "bundle::sport::category"
+  // ── Test data ─────────────────────────────────────────────
+  const [tests,     setTests]     = useState<LibTest[]>(MOCK_TESTS);
+  const [search,    setSearch]    = useState("");
+  const [fSport,    setFSport]    = useState("All");
+  const [fCategory, setFCategory] = useState("All");
+  const [fStatus,   setFStatus]   = useState("All");
+
+  // ── Add-Test modal ────────────────────────────────────────
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form,      setForm]      = useState(EMPTY_FORM());
+  const [errors,    setErrors]    = useState<Record<string,string>>({});
+
+  // ── Add-Field mini-modal ──────────────────────────────────
+  const [fieldOpen,     setFieldOpen]     = useState(false);
+  const [fieldKind,     setFieldKind]     = useState<FieldKind>("Bundle");
+  const [fieldName,     setFieldName]     = useState("");
+  const [fieldError,    setFieldError]    = useState("");
+
+  // ── Accordion state ───────────────────────────────────────
   const [expanded, setExpanded] = useState<Set<string>>(new Set(["Talent Detection"]));
 
   function toggle(key: string) {
@@ -153,7 +166,7 @@ export default function AdminLibrary() {
     });
   }
 
-  // ── Filtered tests ──────────────────────────────────────
+  // ── Filtering ─────────────────────────────────────────────
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return tests.filter((t) => {
@@ -167,26 +180,26 @@ export default function AdminLibrary() {
     });
   }, [tests, search, fSport, fCategory, fStatus]);
 
-  // ── When search active, auto-expand everything ──────────
   const autoExpand = search.length > 0 || fSport !== "All" || fCategory !== "All" || fStatus !== "All";
 
-  function getTests(bundle: Bundle, sport: string, category: Category) {
-    return filtered.filter((t) => {
-      const inBundle   = t.bundles.includes(bundle);
-      const inSport    = t.sports === "all" || t.sports.includes(sport);
-      const inCategory = t.category === category;
-      return inBundle && inSport && inCategory;
-    });
+  function getTests(bundle: string, sport: string, category: string) {
+    return filtered.filter((t) =>
+      t.bundles.includes(bundle) &&
+      (t.sports === "all" || t.sports.includes(sport)) &&
+      t.category === category
+    );
   }
-  function sportHasTests(bundle: Bundle, sport: string) {
-    return CATEGORIES.some((cat) => getTests(bundle, sport, cat).length > 0);
+  function sportHasTests(bundle: string, sport: string) {
+    return categories.some((cat) => getTests(bundle, sport, cat).length > 0);
   }
-  function bundleHasTests(bundle: Bundle) {
-    return SPORTS.some((sp) => sportHasTests(bundle, sp));
+  function bundleHasTests(bundle: string) {
+    return sports.some((sp) => sportHasTests(bundle, sp));
   }
 
-  // ── Modal helpers ────────────────────────────────────────
-  function openModal() { setForm(EMPTY_FORM()); setErrors({}); setModalOpen(true); }
+  const isExp = (key: string) => autoExpand || expanded.has(key);
+
+  // ── Add-Test modal helpers ────────────────────────────────
+  function openModal()  { setForm(EMPTY_FORM()); setErrors({}); setModalOpen(true); }
   function closeModal() { setModalOpen(false); }
 
   function setF<K extends keyof ReturnType<typeof EMPTY_FORM>>(k: K, v: ReturnType<typeof EMPTY_FORM>[K]) {
@@ -196,8 +209,8 @@ export default function AdminLibrary() {
 
   function validate() {
     const e: Record<string,string> = {};
-    if (!form.name.trim())         e.name     = "Required";
-    if (!form.bundles.length)      e.bundles  = "Select at least one bundle";
+    if (!form.name.trim())         e.name = "Required";
+    if (!form.bundles.length)      e.bundles = "Select at least one bundle";
     if (!form.category)            e.category = "Required";
     if (!form.equipmentLevel)      e.equipmentLevel = "Required";
     if (form.outputVars.some((v) => !v.label.trim())) e.outputVars = "All variable labels are required";
@@ -210,30 +223,45 @@ export default function AdminLibrary() {
     ev.preventDefault();
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-    const newTest: LibTest = {
+    setTests((prev) => [...prev, {
       id: `t${Date.now()}`,
       name: form.name.trim(),
       bundles: form.bundles,
       sports: form.allSports ? "all" : form.sports,
-      category: form.category as Category,
+      category: form.category,
       equipmentLevel: form.equipmentLevel as "Automated"|"Elite",
       supervisionRequired: form.supervisionRequired,
       minAge: form.minAge ? parseInt(form.minAge) : null,
       maxAge: form.maxAge ? parseInt(form.maxAge) : null,
       presentationTypes: form.presentationTypes,
       status: form.status,
-      outputVars: form.outputVars.map((v) => ({
-        label: v.label,
-        unit: v.unit === "other" ? v.otherUnit : v.unit,
-      })),
+      outputVars: form.outputVars.map((v) => ({ label: v.label, unit: v.unit === "other" ? v.otherUnit : v.unit })),
       citation: form.citation || undefined,
-    };
-    setTests((prev) => [...prev, newTest]);
+    }]);
     closeModal();
   }
 
-  const isExp = (key: string) => autoExpand || expanded.has(key);
+  // ── Add-Field handler ─────────────────────────────────────
+  function openFieldModal()  { setFieldName(""); setFieldError(""); setFieldKind("Bundle"); setFieldOpen(true); }
+  function closeFieldModal() { setFieldOpen(false); }
 
+  function handleAddField() {
+    const name = fieldName.trim();
+    if (!name) { setFieldError("Name is required"); return; }
+    if (fieldKind === "Bundle") {
+      if (bundles.includes(name)) { setFieldError("Bundle already exists"); return; }
+      setBundles((p) => [...p, name]);
+    } else if (fieldKind === "Sport") {
+      if (sports.includes(name)) { setFieldError("Sport already exists"); return; }
+      setSports((p) => [...p, name]);
+    } else {
+      if (categories.includes(name)) { setFieldError("Category already exists"); return; }
+      setCategories((p) => [...p, name]);
+    }
+    closeFieldModal();
+  }
+
+  // ─────────────────────────────────────────────────────────
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
@@ -243,12 +271,23 @@ export default function AdminLibrary() {
           <div>
             <h1 className="text-xl font-bold text-foreground">Test Library</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {filtered.length} test{filtered.length !== 1 ? "s" : ""} across {BUNDLES.length} bundles · {SPORTS.length} sports · {CATEGORIES.length} categories
+              {filtered.length} test{filtered.length !== 1 ? "s" : ""} · {bundles.length} bundles · {sports.length} sports · {categories.length} categories
             </p>
           </div>
-          <button onClick={openModal} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition">
-            <Plus className="w-4 h-4" /> Add Test
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={openFieldModal}
+              className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground border border-border rounded-lg text-sm font-medium hover:bg-secondary/70 transition"
+            >
+              <Layers className="w-4 h-4" /> Add Field
+            </button>
+            <button
+              onClick={openModal}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition"
+            >
+              <Plus className="w-4 h-4" /> Add Test
+            </button>
+          </div>
         </div>
 
         {/* ── Toolbar ── */}
@@ -258,19 +297,17 @@ export default function AdminLibrary() {
             <input type="text" placeholder="Search tests…" value={search} onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
           </div>
-          <ToolbarSelect label="Sport"    value={fSport}    onChange={setFSport}    options={SPORTS as unknown as string[]} />
-          <ToolbarSelect label="Category" value={fCategory} onChange={setFCategory} options={CATEGORIES as unknown as string[]} />
+          <ToolbarSelect label="Sport"    value={fSport}    onChange={setFSport}    options={sports} />
+          <ToolbarSelect label="Category" value={fCategory} onChange={setFCategory} options={categories} />
           <ToolbarSelect label="Status"   value={fStatus}   onChange={setFStatus}   options={STATUSES as unknown as string[]} />
         </div>
 
         {/* ── Nested accordion ── */}
         <div className="space-y-3">
-          {(BUNDLES as unknown as Bundle[]).map((bundle) => {
-            const bHas = bundleHasTests(bundle);
-            if (!bHas) return null;
+          {bundles.map((bundle) => {
+            if (!bundleHasTests(bundle)) return null;
             return (
               <div key={bundle} className="border border-border rounded-xl overflow-hidden">
-                {/* Bundle header */}
                 <button
                   onClick={() => toggle(bundle)}
                   className="w-full flex items-center justify-between px-5 py-3.5 bg-card hover:bg-muted/30 transition text-left"
@@ -287,31 +324,27 @@ export default function AdminLibrary() {
 
                 {isExp(bundle) && (
                   <div className="divide-y divide-border border-t border-border">
-                    {(SPORTS as unknown as string[]).map((sport) => {
-                      if (!sportHasTests(bundle as Bundle, sport)) return null;
+                    {sports.map((sport) => {
+                      if (!sportHasTests(bundle, sport)) return null;
                       const sportKey = `${bundle}::${sport}`;
                       return (
                         <div key={sport}>
-                          {/* Sport header */}
                           <button
                             onClick={() => toggle(sportKey)}
                             className="w-full flex items-center justify-between px-6 py-3 bg-muted/20 hover:bg-muted/40 transition text-left"
                           >
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-foreground">{sport}</span>
-                            </div>
+                            <span className="text-sm font-medium text-foreground">{sport}</span>
                             {isExp(sportKey) ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />}
                           </button>
 
                           {isExp(sportKey) && (
                             <div className="divide-y divide-border/50">
-                              {(CATEGORIES as unknown as Category[]).map((cat) => {
-                                const catTests = getTests(bundle as Bundle, sport, cat);
+                              {categories.map((cat) => {
+                                const catTests = getTests(bundle, sport, cat);
                                 if (!catTests.length) return null;
                                 const catKey = `${bundle}::${sport}::${cat}`;
                                 return (
                                   <div key={cat}>
-                                    {/* Category header */}
                                     <button
                                       onClick={() => toggle(catKey)}
                                       className="w-full flex items-center justify-between px-8 py-2.5 hover:bg-muted/20 transition text-left"
@@ -350,13 +383,9 @@ export default function AdminLibrary() {
                                                 </td>
                                                 <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{t.equipmentLevel}</td>
                                                 <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">
-                                                  {t.minAge !== null || t.maxAge !== null
-                                                    ? `${t.minAge ?? "—"}–${t.maxAge ?? "∞"}`
-                                                    : "Any"}
+                                                  {t.minAge !== null || t.maxAge !== null ? `${t.minAge ?? "—"}–${t.maxAge ?? "∞"}` : "Any"}
                                                 </td>
-                                                <td className="py-2.5 pr-4 text-muted-foreground">
-                                                  {t.outputVars.map((v) => `${v.label} (${v.unit})`).join(", ")}
-                                                </td>
+                                                <td className="py-2.5 pr-4 text-muted-foreground">{t.outputVars.map((v) => `${v.label} (${v.unit})`).join(", ")}</td>
                                                 <td className="py-2.5 pr-4 text-muted-foreground">{t.presentationTypes.join(", ")}</td>
                                                 <td className="py-2.5">
                                                   <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_CLS[t.status]}`}>{t.status}</span>
@@ -390,6 +419,97 @@ export default function AdminLibrary() {
       </div>
 
       {/* ═══════════════════════════════════════════════════
+          ADD FIELD MINI-MODAL
+      ═══════════════════════════════════════════════════ */}
+      {fieldOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={(e) => e.target === e.currentTarget && closeFieldModal()}
+        >
+          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-primary" />
+                <h2 className="text-sm font-semibold text-foreground">Add Field</h2>
+              </div>
+              <button onClick={closeFieldModal} className="p-1.5 rounded-lg hover:bg-secondary transition text-muted-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-5 py-5 space-y-5">
+              {/* Kind selector */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Field Type</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["Bundle", "Sport", "Category"] as FieldKind[]).map((k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => { setFieldKind(k); setFieldError(""); }}
+                      className={`py-2.5 rounded-lg text-sm font-medium border transition ${
+                        fieldKind === k
+                          ? "bg-primary/15 border-primary text-primary"
+                          : "bg-secondary border-border text-muted-foreground hover:border-primary/40"
+                      }`}
+                    >
+                      {k}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Name input */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  {fieldKind} Name <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder={
+                    fieldKind === "Bundle" ? "e.g. Rehabilitation Protocol" :
+                    fieldKind === "Sport"  ? "e.g. Cycling" :
+                    "e.g. Cognitive Function"
+                  }
+                  value={fieldName}
+                  onChange={(e) => { setFieldName(e.target.value); setFieldError(""); }}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddField()}
+                  className={`w-full px-3 py-2 text-sm bg-secondary border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition ${fieldError ? "border-red-500/60" : "border-border"}`}
+                />
+                {fieldError && <p className="text-xs text-red-400">{fieldError}</p>}
+                <p className="text-xs text-muted-foreground">
+                  {fieldKind === "Bundle"   && "Will appear as a top-level program bundle in the accordion."}
+                  {fieldKind === "Sport"    && "Will appear inside each bundle wherever tests are assigned to it."}
+                  {fieldKind === "Category" && "Will appear inside each sport grouping when tests are assigned to it."}
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={closeFieldModal}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/70 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddField}
+                  className="px-5 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition"
+                >
+                  Add {fieldKind}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════
           ADD TEST MODAL
       ═══════════════════════════════════════════════════ */}
       {modalOpen && (
@@ -398,7 +518,6 @@ export default function AdminLibrary() {
           onClick={(e) => e.target === e.currentTarget && closeModal()}
         >
           <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col">
-            {/* Modal header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
               <h2 className="text-base font-semibold text-foreground">Add New Test</h2>
               <button onClick={closeModal} className="p-1.5 rounded-lg hover:bg-secondary transition text-muted-foreground"><X className="w-4 h-4" /></button>
@@ -417,7 +536,7 @@ export default function AdminLibrary() {
               <ModalSection num={2} title="Program & Sport">
                 <Field label="Bundle" error={errors.bundles} required>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    {(BUNDLES as unknown as Bundle[]).map((b) => (
+                    {bundles.map((b) => (
                       <button type="button" key={b}
                         onClick={() => setF("bundles", form.bundles.includes(b) ? form.bundles.filter((x) => x !== b) : [...form.bundles, b])}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${form.bundles.includes(b) ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"}`}>
@@ -434,7 +553,7 @@ export default function AdminLibrary() {
                   </div>
                   {!form.allSports && (
                     <div className="mt-3 grid grid-cols-3 gap-1.5 max-h-40 overflow-y-auto pr-1">
-                      {(SPORTS as unknown as string[]).map((s) => (
+                      {sports.map((s) => (
                         <label key={s} className="flex items-center gap-1.5 cursor-pointer text-xs text-foreground">
                           <input type="checkbox" className="accent-primary" checked={form.sports.includes(s)}
                             onChange={(e) => setF("sports", e.target.checked ? [...form.sports, s] : form.sports.filter((x) => x !== s))} />
@@ -446,9 +565,9 @@ export default function AdminLibrary() {
                 </Field>
 
                 <Field label="Category" error={errors.category} required>
-                  <select value={form.category} onChange={(e) => setF("category", e.target.value as Category)} className={iCls(!!errors.category)}>
+                  <select value={form.category} onChange={(e) => setF("category", e.target.value)} className={iCls(!!errors.category)}>
                     <option value="">Select category…</option>
-                    {(CATEGORIES as unknown as string[]).map((c) => <option key={c} value={c}>{c}</option>)}
+                    {categories.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </Field>
               </ModalSection>
@@ -457,7 +576,7 @@ export default function AdminLibrary() {
               <ModalSection num={3} title="Recorded Output Variables">
                 {errors.outputVars && <p className="text-xs text-red-400 -mt-2">{errors.outputVars}</p>}
                 <div className="space-y-3">
-                  {form.outputVars.map((v, idx) => (
+                  {form.outputVars.map((v) => (
                     <div key={v.id} className="flex items-start gap-2">
                       <input type="text" placeholder="Variable label" value={v.label}
                         onChange={(e) => setF("outputVars", form.outputVars.map((r) => r.id === v.id ? {...r, label: e.target.value} : r))}
@@ -465,7 +584,7 @@ export default function AdminLibrary() {
                       <select value={v.unit}
                         onChange={(e) => setF("outputVars", form.outputVars.map((r) => r.id === v.id ? {...r, unit: e.target.value} : r))}
                         className={`${iCls(false)} w-28`}>
-                        {(UNITS as unknown as string[]).map((u) => <option key={u} value={u}>{u}</option>)}
+                        {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
                       </select>
                       {v.unit === "other" && (
                         <input type="text" placeholder="Unit…" value={v.otherUnit}
@@ -567,7 +686,7 @@ export default function AdminLibrary() {
               {/* §7 — Presentation Type */}
               <ModalSection num={7} title="Presentation Type">
                 <div className="grid grid-cols-4 gap-2">
-                  {(PRESENTATION_TYPES as unknown as string[]).map((pt) => {
+                  {PRESENTATION_TYPES.map((pt) => {
                     const on = form.presentationTypes.includes(pt);
                     return (
                       <button type="button" key={pt}
@@ -588,7 +707,6 @@ export default function AdminLibrary() {
                   className={`${iCls(false)} resize-none`} />
               </ModalSection>
 
-              {/* Submit */}
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={closeModal}
                   className="px-4 py-2 rounded-lg text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/70 transition">
@@ -608,7 +726,7 @@ export default function AdminLibrary() {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  Small helpers
+//  Helpers
 // ═══════════════════════════════════════════════════════════
 function iCls(err: boolean) {
   return `w-full px-3 py-2 text-sm bg-secondary border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition ${err ? "border-red-500/60" : "border-border"}`;
@@ -642,8 +760,8 @@ function ModalSection({ num, title, children }: { num:number; title:string; chil
 function Toggle({ checked, onChange }: { checked:boolean; onChange:(v:boolean)=>void }) {
   return (
     <button type="button" onClick={() => onChange(!checked)}
-      className={`relative w-10 h-5 rounded-full transition-colors ${checked ? "bg-primary" : "bg-secondary border border-border"}`}>
-      <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${checked ? "left-5.5 translate-x-0.5" : "left-0.5"}`} />
+      className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${checked ? "bg-primary" : "bg-secondary border border-border"}`}>
+      <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${checked ? "left-[22px]" : "left-0.5"}`} />
     </button>
   );
 }
@@ -661,9 +779,11 @@ function ToolbarSelect({ label, value, onChange, options }: { label:string; valu
   );
 }
 
-function BundleIcon({ bundle }: { bundle: Bundle }) {
-  const cls = "w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold";
-  if (bundle === "Talent Detection")    return <span className={`${cls} bg-blue-500/20 text-blue-400`}>TD</span>;
-  if (bundle === "Athlete Development") return <span className={`${cls} bg-orange-500/20 text-orange-400`}>AD</span>;
-  return                                       <span className={`${cls} bg-purple-500/20 text-purple-400`}>PP</span>;
+function BundleIcon({ bundle }: { bundle: string }) {
+  const cls = "w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0";
+  const initials = bundle.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  if (bundle === "Talent Detection")    return <span className={`${cls} bg-blue-500/20 text-blue-400`}>{initials}</span>;
+  if (bundle === "Athlete Development") return <span className={`${cls} bg-orange-500/20 text-orange-400`}>{initials}</span>;
+  if (bundle === "Professional Practice") return <span className={`${cls} bg-purple-500/20 text-purple-400`}>{initials}</span>;
+  return <span className={`${cls} bg-primary/20 text-primary`}>{initials}</span>;
 }
