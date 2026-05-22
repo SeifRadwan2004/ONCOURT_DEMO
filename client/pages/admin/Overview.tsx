@@ -220,90 +220,198 @@ export default function AdminOverview() {
             />
           </div>
 
-          {/* Revenue & Subscription Status */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Revenue Card */}
-            <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Total Revenue
-                  </p>
-                  <p className="text-3xl font-bold text-foreground mt-2">
-                    AED {PLATFORM_DATA.totalRevenue.toLocaleString()}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    This month: AED {PLATFORM_DATA.monthlyRevenue.toLocaleString()}
-                  </p>
+          {/* Overall Impact & Progress */}
+          <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-purple-400" />
+                Platform Impact & Growth
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Comprehensive overview of OnCourt's reach and influence across the sports ecosystem
+              </p>
+            </div>
+
+            {/* Impact Statistics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
+                <div className="flex items-end justify-between mb-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase">Total Athletes Impacted</p>
+                  <span className="text-xs text-green-400 font-medium">+18%</span>
                 </div>
-                <div className="p-3 rounded-lg bg-green-500/15 text-green-400 border border-green-500/30">
-                  <DollarSign className="w-6 h-6" />
-                </div>
+                <p className="text-3xl font-bold text-foreground">{PLATFORM_DATA.totalAthletes}</p>
+                <p className="text-xs text-muted-foreground mt-1">Across {PLATFORM_DATA.totalEntities} entities</p>
               </div>
-              <div className="pt-4 border-t border-border">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                  Monthly Breakdown
-                </p>
-                <div className="space-y-3">
-                  <ProgressBar
-                    label="This Month"
-                    current={PLATFORM_DATA.monthlyRevenue}
-                    total={PLATFORM_DATA.totalRevenue}
-                    color="green"
-                  />
-                  <ProgressBar
-                    label="Active Subscriptions"
-                    current={PLATFORM_DATA.activeSubscriptions}
-                    total={
-                      PLATFORM_DATA.activeSubscriptions +
-                      PLATFORM_DATA.trialSubscriptions +
-                      PLATFORM_DATA.expiredSubscriptions
-                    }
-                    color="blue"
-                  />
+
+              <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
+                <div className="flex items-end justify-between mb-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase">Total Progressions Tracked</p>
+                  <span className="text-xs text-green-400 font-medium">+24%</span>
+                </div>
+                <p className="text-3xl font-bold text-foreground">{PLATFORM_DATA.progressions}</p>
+                <p className="text-xs text-muted-foreground mt-1">Individual athlete advancements</p>
+              </div>
+
+              <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
+                <div className="flex items-end justify-between mb-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase">Test Sessions Completed</p>
+                  <span className="text-xs text-green-400 font-medium">+31%</span>
+                </div>
+                <p className="text-3xl font-bold text-foreground">{PLATFORM_DATA.completedTestDays}</p>
+                <p className="text-xs text-muted-foreground mt-1">Benchmarking & evaluation events</p>
+              </div>
+
+              <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
+                <div className="flex items-end justify-between mb-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase">Coaches Employed</p>
+                  <span className="text-xs text-green-400 font-medium">+7%</span>
+                </div>
+                <p className="text-3xl font-bold text-foreground">{PLATFORM_DATA.totalCoaches}</p>
+                <p className="text-xs text-muted-foreground mt-1">Professional evaluation experts</p>
+              </div>
+            </div>
+
+            {/* Progress Visualization */}
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-foreground">Platform Reach</span>
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {PLATFORM_DATA.totalAthletes} of 500 capacity
+                    </span>
+                  </div>
+                  <div className="w-full h-3 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full"
+                      style={{ width: `${(PLATFORM_DATA.totalAthletes / 500) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-foreground">User Activation</span>
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {activeUserPercentage}% active
+                    </span>
+                  </div>
+                  <div className="w-full h-3 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full"
+                      style={{
+                        width: `${(PLATFORM_DATA.activeAthletes / PLATFORM_DATA.totalAthletes) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-foreground">Progression Rate</span>
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {(
+                        (PLATFORM_DATA.progressions / PLATFORM_DATA.totalAthletes) *
+                        100
+                      ).toFixed(1)}
+                      % tracked
+                    </span>
+                  </div>
+                  <div className="w-full h-3 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-purple-500 to-pink-400 rounded-full"
+                      style={{
+                        width: `${(PLATFORM_DATA.progressions / PLATFORM_DATA.totalAthletes) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-foreground">Entity Engagement</span>
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {activeEntityPercentage}% engaged
+                    </span>
+                  </div>
+                  <div className="w-full h-3 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-orange-500 to-amber-400 rounded-full"
+                      style={{
+                        width: `${(PLATFORM_DATA.activeEntities / PLATFORM_DATA.totalEntities) * 100}%`,
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Subscription Status Card */}
-            <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-              <div className="flex items-center justify-between mb-1">
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Subscription Status
-                  </p>
-                  <p className="text-2xl font-bold text-foreground mt-2">
-                    {PLATFORM_DATA.activeSubscriptions +
-                      PLATFORM_DATA.trialSubscriptions +
-                      PLATFORM_DATA.expiredSubscriptions}{" "}
-                    Total
-                  </p>
-                </div>
-                <div className="p-3 rounded-lg bg-blue-500/15 text-blue-400 border border-blue-500/30">
-                  <Activity className="w-6 h-6" />
-                </div>
+            {/* Impact Summary */}
+            <div className="pt-4 border-t border-border grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-400">
+                  {Math.round(
+                    (PLATFORM_DATA.activeAthletes / PLATFORM_DATA.totalAthletes) * 100
+                  )}
+                  %
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Active Engagement</p>
               </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-400">
+                  {(PLATFORM_DATA.progressions / PLATFORM_DATA.completedTestDays).toFixed(1)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Avg Progressions per Test</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-purple-400">
+                  {Math.round(
+                    PLATFORM_DATA.totalAthletes / PLATFORM_DATA.totalCoaches
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Athletes per Coach</p>
+              </div>
+            </div>
+          </div>
 
-              <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border">
-                <StatCard
-                  label="Active"
-                  value={PLATFORM_DATA.activeSubscriptions}
-                  icon={<CheckCircle2 className="w-4 h-4" />}
-                  color="green"
-                />
-                <StatCard
-                  label="Trial"
-                  value={PLATFORM_DATA.trialSubscriptions}
-                  icon={<Clock3 className="w-4 h-4" />}
-                  color="yellow"
-                />
-                <StatCard
-                  label="Expired"
-                  value={PLATFORM_DATA.expiredSubscriptions}
-                  icon={<AlertCircle className="w-4 h-4" />}
-                  color="red"
-                />
+          {/* Subscription Status Card */}
+          <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between mb-1">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Subscription Status
+                </p>
+                <p className="text-2xl font-bold text-foreground mt-2">
+                  {PLATFORM_DATA.activeSubscriptions +
+                    PLATFORM_DATA.trialSubscriptions +
+                    PLATFORM_DATA.expiredSubscriptions}{" "}
+                  Total
+                </p>
               </div>
+              <div className="p-3 rounded-lg bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                <Activity className="w-6 h-6" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border">
+              <StatCard
+                label="Active"
+                value={PLATFORM_DATA.activeSubscriptions}
+                icon={<CheckCircle2 className="w-4 h-4" />}
+                color="green"
+              />
+              <StatCard
+                label="Trial"
+                value={PLATFORM_DATA.trialSubscriptions}
+                icon={<Clock3 className="w-4 h-4" />}
+                color="yellow"
+              />
+              <StatCard
+                label="Expired"
+                value={PLATFORM_DATA.expiredSubscriptions}
+                icon={<AlertCircle className="w-4 h-4" />}
+                color="red"
+              />
             </div>
           </div>
 
