@@ -44,7 +44,7 @@ const MOCK_TEST_DAYS: TestDay[] = [
     status: "completed",
     location: "ADFC Training Ground",
     tests: ["30m Sprint", "CMJ", "505 Agility Test"],
-    isPaid: false,
+    isPaid: true,
   },
 ];
 
