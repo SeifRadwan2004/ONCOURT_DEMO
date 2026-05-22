@@ -6,20 +6,24 @@ import {
 } from "lucide-react";
 
 // ═══════════════════════════════════════════════════════════
-//  CONSTANTS
+//  SEED LISTS  (stateful — items can be added at runtime)
 // ═══════════════════════════════════════════════════════════
-const BUNDLES = ["Talent Detection", "Athlete Development", "Professional Practice"] as const;
-type Bundle = typeof BUNDLES[number];
+type Bundle  = string;
+type Category = string;
 
-const SPORTS = [
+const SEED_BUNDLES: Bundle[] = [
+  "Talent Detection", "Athlete Development", "Professional Practice",
+];
+
+const SEED_SPORTS: string[] = [
   "Tennis","Squash","Padel","Table Tennis","Basketball","Volleyball","Handball",
   "Football","Sprint Swimming","Distance Swimming","Sprint Running","Distance Running",
   "Boxing","Karate","Taekwondo","Judo","Wrestling","BJJ",
   "Weightlifting","Artistic Gymnastics","Rhythmic Gymnastics","Artistic Swimming",
   "Triathlon","Pentathlon",
-] as const;
+];
 
-const CATEGORIES = [
+const SEED_CATEGORIES: Category[] = [
   "Speed & Acceleration",
   "Change of Direction & Agility",
   "Power & Explosiveness",
@@ -32,8 +36,7 @@ const CATEGORIES = [
   "Reactivity & Neural Coordination",
   "Rhythm & Timing",
   "Anthropometrics",
-] as const;
-type Category = typeof CATEGORIES[number];
+];
 
 const UNITS = [
   "s","ms","m","cm","mm","kg","N","W","°",
@@ -105,10 +108,10 @@ const newRow  = (): DerivedRow => ({ id: crypto.randomUUID(), name:"", formula:"
 
 const EMPTY_FORM = () => ({
   name: "",
-  bundles: [] as Bundle[],
+  bundles: [] as string[],
   allSports: true,
   sports: [] as string[],
-  category: "" as Category | "",
+  category: "",
   outputVars: [newVar()] as OutputVar[],
   hasDerived: false,
   derivedRows: [] as DerivedRow[],
