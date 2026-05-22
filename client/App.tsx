@@ -18,6 +18,7 @@ import CoachDashboard from "./pages/coach/Dashboard";
 import CoachGroups from "./pages/coach/Groups";
 import CoachBooking from "./pages/coach/Booking";
 import CoachSubscriptions from "./pages/coach/Subscriptions";
+import CoachConfirmations from "./pages/coach/Confirmations";
 
 // Admin Pages
 import AdminOverview from "./pages/admin/Overview";
@@ -65,6 +66,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <CoachSubscriptions />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/coach/confirmations"
+      element={
+        <ProtectedRoute>
+          <CoachConfirmations />
         </ProtectedRoute>
       }
     />
