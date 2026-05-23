@@ -50,11 +50,9 @@ export default function Login() {
         {/* Logo/Brand */}
         <div className="text-center mb-8">
           <div className="inline-block mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-accent to-orange-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">OC</span>
-            </div>
+            <img src="https://cdn.builder.io/api/v1/image/assets%2F6c6007d7a3904b5cb566ab5a6dd6c538%2F512043dd4e0c4d2b974e32c615eeae69?format=webp" alt="OnCourt" className="h-12 w-auto mx-auto" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">OnCourt</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2 mt-4">OnCourt</h1>
           <p className="text-muted-foreground">
             Youth Athlete Talent Identification & Development
           </p>
