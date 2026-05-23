@@ -48,14 +48,8 @@ export default function Login() {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <div className="inline-block mb-4">
-            <img src="https://cdn.builder.io/api/v1/image/assets%2F6c6007d7a3904b5cb566ab5a6dd6c538%2F512043dd4e0c4d2b974e32c615eeae69?format=webp" alt="OnCourt" className="h-12 w-auto mx-auto" />
-          </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2 mt-4">OnCourt</h1>
-          <p className="text-muted-foreground">
-            Youth Athlete Talent Identification & Development
-          </p>
+        <div className="text-center mb-12">
+          <img src="https://cdn.builder.io/api/v1/image/assets%2F6c6007d7a3904b5cb566ab5a6dd6c538%2F512043dd4e0c4d2b974e32c615eeae69?format=webp" alt="OnCourt" className="h-32 w-auto mx-auto" />
         </div>
 
         {/* Login Form */}
