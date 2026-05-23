@@ -23,6 +23,7 @@ import CoachAccountSettings from "./pages/coach/AccountSettings";
 
 // Athlete Pages
 import AthleteDashboard from "./pages/athlete/Dashboard";
+import AthleteProfile from "./pages/athlete/Profile";
 import AthleteConfirmations from "./pages/athlete/Confirmations";
 import AthleteSubscriptions from "./pages/athlete/Subscriptions";
 import AthleteAccountSettings from "./pages/athlete/AccountSettings";
@@ -100,6 +101,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <AthleteDashboard />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/athlete/profile"
+      element={
+        <ProtectedRoute>
+          <AthleteProfile />
         </ProtectedRoute>
       }
     />
