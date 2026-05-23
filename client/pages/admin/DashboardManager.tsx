@@ -278,13 +278,11 @@ export default function DashboardManager() {
         </div>
       </div>
 
-      {/* Create/Edit Dialog */}
+      {/* Create New Dashboard Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {editingDashboard ? "Edit Dashboard" : "Create New Dashboard"}
-            </DialogTitle>
+            <DialogTitle>Create New Dashboard</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -337,9 +335,7 @@ export default function DashboardManager() {
             <Button variant="outline" onClick={handleCloseDialog}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              {editingDashboard ? "Update" : "Create"}
-            </Button>
+            <Button onClick={handleSave}>Create</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
