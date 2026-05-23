@@ -83,7 +83,17 @@ export default function AthleteDashboard() {
       fullMark: 100,
     },
     {
-      name: "Power",
+      name: "COD",
+      value: 100 - (((latestResults["5-10-5"]?.value as number) || 0) * 100) / 8,
+      fullMark: 100,
+    },
+    {
+      name: "Agility",
+      value: 100 - (((latestResults["T-Test"]?.value as number) || 0) * 100) / 10,
+      fullMark: 100,
+    },
+    {
+      name: "Explosiveness",
       value: ((latestResults["Vertical Jump"]?.value as number) || 0) * 2,
       fullMark: 100,
     },
@@ -94,7 +104,7 @@ export default function AthleteDashboard() {
     },
     {
       name: "Endurance",
-      value: 65,
+      value: ((latestResults["Yo-Yo Test"]?.value as number) || 0) * 10,
       fullMark: 100,
     },
   ];
