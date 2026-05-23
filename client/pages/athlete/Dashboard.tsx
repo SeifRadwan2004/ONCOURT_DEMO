@@ -272,12 +272,12 @@ export default function AthleteDashboard() {
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold">All Test Results</h3>
             <div className="w-48">
-              <Select value={selectedSession || ""} onValueChange={setSelectedSession}>
+              <Select value={selectedSession ? selectedSession : "all"} onValueChange={(val) => setSelectedSession(val === "all" ? null : val)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by session" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Sessions</SelectItem>
+                  <SelectItem value="all">All Sessions</SelectItem>
                   {sessions.map((session) => (
                     <SelectItem key={session.id} value={session.id}>
                       {new Date(session.date).toLocaleDateString()}
