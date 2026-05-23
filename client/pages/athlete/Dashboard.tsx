@@ -335,26 +335,75 @@ export default function AthleteDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {Object.values(latestResults)
                   .slice(0, 8)
-                  .map((result) => (
-                    <button
-                      key={result.testName}
-                      onClick={() => setSelectedTestName(result.testName)}
-                      className="bg-card border border-border rounded-lg p-4 hover:border-accent hover:shadow-lg transition-all cursor-pointer text-left"
-                    >
-                      <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">
-                        {result.testType}
-                      </p>
-                      <p className="text-2xl font-bold text-accent mb-1">
-                        {result.value}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {result.testName}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {new Date(result.date).toLocaleDateString()}
-                      </p>
-                    </button>
-                  ))}
+                  .map((result) => {
+                    const testHistory = athleteTestResults
+                      .filter((r) => r.testName === result.testName)
+                      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+                    return (
+                      <button
+                        key={result.testName}
+                        onClick={() => setSelectedTestName(result.testName)}
+                        className="bg-card border border-border rounded-lg p-4 hover:border-accent hover:shadow-lg transition-all cursor-pointer text-left space-y-3 group"
+                      >
+                        {/* Header */}
+                        <div>
+                          <p className="text-sm text-muted-foreground uppercase tracking-wider mb-1">
+                            {result.testType}
+                          </p>
+                          <p className="text-2xl font-bold text-accent">
+                            {result.value}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {result.testName}
+                          </p>
+                        </div>
+
+                        {/* Mini Chart */}
+                        {testHistory.length > 0 && (
+                          <div className="w-full h-12 cursor-pointer">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart
+                                data={testHistory}
+                                margin={{ top: 2, right: 2, left: 0, bottom: 0 }}
+                              >
+                                <Line
+                                  type="monotone"
+                                  dataKey="value"
+                                  stroke="hsl(var(--accent))"
+                                  strokeWidth={1.5}
+                                  dot={{ r: 2, fill: "hsl(var(--accent))" }}
+                                  isAnimationActive={false}
+                                />
+                                <XAxis dataKey="date" hide />
+                                <YAxis hide domain={["auto", "auto"]} />
+                                <Tooltip
+                                  contentStyle={{
+                                    background: "hsl(var(--card))",
+                                    border: "1px solid hsl(var(--border))",
+                                    borderRadius: "6px",
+                                    fontSize: 11,
+                                    color: "hsl(var(--foreground))",
+                                  }}
+                                  labelStyle={{ display: "none" }}
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        )}
+
+                        {/* Footer */}
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(result.date).toLocaleDateString()}
+                          </p>
+                          <p className="text-xs text-accent group-hover:text-orange-400 transition-colors mt-1">
+                            Tap to expand
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
               </div>
             </div>
           )}
