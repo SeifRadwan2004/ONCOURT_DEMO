@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -89,31 +90,23 @@ const mockDashboards: Dashboard[] = [
 ];
 
 export default function DashboardManager() {
+  const navigate = useNavigate();
   const [dashboards, setDashboards] = useState<Dashboard[]>(mockDashboards);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingDashboard, setEditingDashboard] = useState<Dashboard | null>(null);
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
   });
 
-  const handleOpenDialog = (dashboard?: Dashboard) => {
-    if (dashboard) {
-      setEditingDashboard(dashboard);
-      setFormData({ name: dashboard.name, description: dashboard.description });
-      setSelectedUser(dashboard.userId);
-    } else {
-      setEditingDashboard(null);
-      setFormData({ name: "", description: "" });
-      setSelectedUser("");
-    }
+  const handleOpenNewDialog = () => {
+    setFormData({ name: "", description: "" });
+    setSelectedUser("");
     setIsDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
-    setEditingDashboard(null);
     setFormData({ name: "", description: "" });
     setSelectedUser("");
   };
@@ -127,37 +120,18 @@ export default function DashboardManager() {
     const user = mockUsers.find((u) => u.id === selectedUser);
     if (!user) return;
 
-    if (editingDashboard) {
-      setDashboards(
-        dashboards.map((d) =>
-          d.id === editingDashboard.id
-            ? {
-                ...d,
-                name: formData.name,
-                description: formData.description,
-                userId: selectedUser,
-                userName: user.name,
-                userRole: user.role,
-                updatedAt: new Date().toISOString().split("T")[0],
-              }
-            : d
-        )
-      );
-    } else {
-      const newDashboard: Dashboard = {
-        id: `d${dashboards.length + 1}`,
-        name: formData.name,
-        description: formData.description,
-        userId: selectedUser,
-        userName: user.name,
-        userRole: user.role,
-        createdAt: new Date().toISOString().split("T")[0],
-        updatedAt: new Date().toISOString().split("T")[0],
-        isActive: true,
-      };
-      setDashboards([...dashboards, newDashboard]);
-    }
-
+    const newDashboard: Dashboard = {
+      id: `d${dashboards.length + 1}`,
+      name: formData.name,
+      description: formData.description,
+      userId: selectedUser,
+      userName: user.name,
+      userRole: user.role,
+      createdAt: new Date().toISOString().split("T")[0],
+      updatedAt: new Date().toISOString().split("T")[0],
+      isActive: true,
+    };
+    setDashboards([...dashboards, newDashboard]);
     handleCloseDialog();
   };
 
@@ -165,6 +139,10 @@ export default function DashboardManager() {
     if (confirm("Are you sure you want to delete this dashboard?")) {
       setDashboards(dashboards.filter((d) => d.id !== id));
     }
+  };
+
+  const handleEdit = (dashboard: Dashboard) => {
+    navigate(`/admin/dashboard-editor/${dashboard.id}`, { state: { dashboard } });
   };
 
   const toggleActive = (id: string) => {
@@ -184,7 +162,7 @@ export default function DashboardManager() {
               Create and manage custom dashboards for users
             </p>
           </div>
-          <Button onClick={() => handleOpenDialog()} className="gap-2">
+          <Button onClick={handleOpenNewDialog} className="gap-2">
             <Plus className="w-4 h-4" />
             New Dashboard
           </Button>
@@ -275,7 +253,7 @@ export default function DashboardManager() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleOpenDialog(dashboard)}
+                          onClick={() => handleEdit(dashboard)}
                           className="gap-1"
                         >
                           <Edit className="w-4 h-4" />
