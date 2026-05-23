@@ -135,7 +135,7 @@ export default function AthleteDashboard() {
           <p className="text-muted-foreground">Your performance and anthropometric data</p>
         </div>
 
-        {/* Anthropometric Data Section */}
+        {/* Athlete Info and Performance Profile Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Card */}
           <div className="lg:col-span-1 bg-card rounded-lg p-6 shadow-xl border border-border">
@@ -171,70 +171,70 @@ export default function AthleteDashboard() {
             </div>
           </div>
 
-          {/* Measurements */}
+          {/* Performance Radar Chart */}
           <div className="lg:col-span-2 bg-card rounded-lg p-6 shadow-xl border border-border">
-            <h3 className="text-lg font-bold mb-6">Anthropometric Data</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="p-4 bg-secondary rounded-lg">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                  Height
-                </p>
-                <p className="text-2xl font-bold text-accent">{athlete.height}</p>
-                <p className="text-xs text-muted-foreground">cm</p>
-              </div>
-              <div className="p-4 bg-secondary rounded-lg">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                  Weight
-                </p>
-                <p className="text-2xl font-bold text-accent">{athlete.weight}</p>
-                <p className="text-xs text-muted-foreground">kg</p>
-              </div>
-              <div className="p-4 bg-secondary rounded-lg">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                  Wingspan
-                </p>
-                <p className="text-2xl font-bold text-accent">
-                  {athlete.wingspan}
-                </p>
-                <p className="text-xs text-muted-foreground">cm</p>
-              </div>
-              <div className="p-4 bg-secondary rounded-lg">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                  Sitting Height
-                </p>
-                <p className="text-2xl font-bold text-accent">
-                  {athlete.sittingHeight}
-                </p>
-                <p className="text-xs text-muted-foreground">cm</p>
-              </div>
+            <h3 className="text-lg font-bold mb-6">Performance Profile</h3>
+            <div className="flex justify-center">
+              <ResponsiveContainer width="100%" height={300}>
+                <RadarChart data={radarData}>
+                  <PolarGrid stroke="hsl(var(--border))" />
+                  <PolarAngleAxis dataKey="name" stroke="hsl(var(--foreground))" />
+                  <PolarRadiusAxis stroke="hsl(var(--border))" />
+                  <Radar
+                    name="Performance"
+                    dataKey="value"
+                    stroke="hsl(var(--accent))"
+                    fill="hsl(var(--accent))"
+                    fillOpacity={0.6}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                    }}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>
 
-        {/* Performance Radar Chart */}
+        {/* Anthropometric Data */}
         <div className="bg-card rounded-lg p-6 shadow-xl border border-border">
-          <h3 className="text-lg font-bold mb-6">Performance Profile</h3>
-          <div className="flex justify-center">
-            <ResponsiveContainer width="100%" height={300}>
-              <RadarChart data={radarData}>
-                <PolarGrid stroke="hsl(var(--border))" />
-                <PolarAngleAxis dataKey="name" stroke="hsl(var(--foreground))" />
-                <PolarRadiusAxis stroke="hsl(var(--border))" />
-                <Radar
-                  name="Performance"
-                  dataKey="value"
-                  stroke="hsl(var(--accent))"
-                  fill="hsl(var(--accent))"
-                  fillOpacity={0.6}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                  }}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
+          <h3 className="text-lg font-bold mb-6">Anthropometric Data</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-4 bg-secondary rounded-lg">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                Height
+              </p>
+              <p className="text-2xl font-bold text-accent">{athlete.height}</p>
+              <p className="text-xs text-muted-foreground">cm</p>
+            </div>
+            <div className="p-4 bg-secondary rounded-lg">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                Weight
+              </p>
+              <p className="text-2xl font-bold text-accent">{athlete.weight}</p>
+              <p className="text-xs text-muted-foreground">kg</p>
+            </div>
+            <div className="p-4 bg-secondary rounded-lg">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                Wingspan
+              </p>
+              <p className="text-2xl font-bold text-accent">
+                {athlete.wingspan}
+              </p>
+              <p className="text-xs text-muted-foreground">cm</p>
+            </div>
+            <div className="p-4 bg-secondary rounded-lg">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                Sitting Height
+              </p>
+              <p className="text-2xl font-bold text-accent">
+                {athlete.sittingHeight}
+              </p>
+              <p className="text-xs text-muted-foreground">cm</p>
+            </div>
           </div>
         </div>
 
