@@ -45,6 +45,7 @@ export default function AthleteDashboard() {
 
   const [selectedTestName, setSelectedTestName] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"card" | "tabular">("card");
 
   if (!athlete) {
     return (
@@ -238,96 +239,125 @@ export default function AthleteDashboard() {
           </div>
         </div>
 
-        {/* Latest Test Results as Cards */}
-        <div>
-          <h3 className="text-lg font-bold mb-4">Latest Test Results</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Object.values(latestResults)
-              .slice(0, 8)
-              .map((result) => (
-                <button
-                  key={result.testName}
-                  onClick={() => setSelectedTestName(result.testName)}
-                  className="bg-card border border-border rounded-lg p-4 hover:border-accent hover:shadow-lg transition-all cursor-pointer text-left"
-                >
-                  <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">
-                    {result.testType}
-                  </p>
-                  <p className="text-2xl font-bold text-accent mb-1">
-                    {result.value}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {result.testName}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {new Date(result.date).toLocaleDateString()}
-                  </p>
-                </button>
-              ))}
+        {/* Test Results - Card View or Tabular View Toggle */}
+        <div className="space-y-4">
+          {/* View Toggle */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setViewMode("card"); setSelectedTestName(null); }}
+              className={`px-4 py-2 text-sm rounded-lg font-medium transition-all ${
+                viewMode === "card"
+                  ? "bg-accent text-accent-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              }`}
+            >
+              Card View
+            </button>
+            <button
+              onClick={() => setViewMode("tabular")}
+              className={`px-4 py-2 text-sm rounded-lg font-medium transition-all ${
+                viewMode === "tabular"
+                  ? "bg-accent text-accent-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              }`}
+            >
+              Table View
+            </button>
           </div>
-        </div>
 
-        {/* Test Results Table with Session Filter */}
-        <div className="bg-card rounded-lg p-6 shadow-xl border border-border">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold">All Test Results</h3>
-            <div className="w-48">
-              <Select value={selectedSession ? selectedSession : "all"} onValueChange={(val) => setSelectedSession(val === "all" ? null : val)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by session" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sessions</SelectItem>
-                  {sessions.map((session) => (
-                    <SelectItem key={session.id} value={session.id}>
-                      {new Date(session.date).toLocaleDateString()}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {viewMode === "tabular" ? (
+            /* TABLE VIEW */
+            <div className="bg-card rounded-lg p-6 shadow-xl border border-border space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold">All Test Results</h3>
+                <div className="w-48">
+                  <Select value={selectedSession ? selectedSession : "all"} onValueChange={(val) => setSelectedSession(val === "all" ? null : val)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Filter by session" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Sessions</SelectItem>
+                      {sessions.map((session) => (
+                        <SelectItem key={session.id} value={session.id}>
+                          {new Date(session.date).toLocaleDateString()}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Test Name</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Value</TableHead>
+                      <TableHead>Unit</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredResults.map((result, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium">
+                          {result.testName}
+                        </TableCell>
+                        <TableCell>{result.testType}</TableCell>
+                        <TableCell className="text-accent font-semibold">
+                          {result.value}
+                        </TableCell>
+                        <TableCell>{result.unit}</TableCell>
+                        <TableCell>
+                          {new Date(result.date).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedTestName(result.testName)}
+                          >
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Test Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Value</TableHead>
-                  <TableHead>Unit</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredResults.map((result, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell className="font-medium">
-                      {result.testName}
-                    </TableCell>
-                    <TableCell>{result.testType}</TableCell>
-                    <TableCell className="text-accent font-semibold">
-                      {result.value}
-                    </TableCell>
-                    <TableCell>{result.unit}</TableCell>
-                    <TableCell>
-                      {new Date(result.date).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedTestName(result.testName)}
-                      >
-                        View
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          ) : (
+            /* CARD VIEW */
+            <div>
+              <h3 className="text-lg font-bold mb-4">Latest Test Results</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {Object.values(latestResults)
+                  .slice(0, 8)
+                  .map((result) => (
+                    <button
+                      key={result.testName}
+                      onClick={() => setSelectedTestName(result.testName)}
+                      className="bg-card border border-border rounded-lg p-4 hover:border-accent hover:shadow-lg transition-all cursor-pointer text-left"
+                    >
+                      <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">
+                        {result.testType}
+                      </p>
+                      <p className="text-2xl font-bold text-accent mb-1">
+                        {result.value}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {result.testName}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {new Date(result.date).toLocaleDateString()}
+                      </p>
+                    </button>
+                  ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Test History Graph Dialog */}
