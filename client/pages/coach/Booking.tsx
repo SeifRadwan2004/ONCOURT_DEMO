@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { CoachLayout } from "@/components/CoachLayout";
 import { useGroup } from "@/contexts/GroupContext";
-import { testCategories } from "@/data/mockData";
 import {
   Select,
   SelectContent,
@@ -26,26 +25,57 @@ import {
   Users,
   Clock,
   CheckCircle2,
-  Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// ─── Tag definitions ──────────────────────────────────────────────────────────
-// "Above 13" tag applies to bundles / tests recommended for athletes over 13
-const ABOVE_13_BUNDLES = ["Speed", "Agility", "Power", "Endurance", "Strength"];
-const ABOVE_13_TESTS = [
-  "30m Sprint", "5-10-5", "T-Test", "Broad Jump",
-  "Yo-Yo Test", "Beep Test", "Grip Left", "Grip Right", "Push-Ups",
+// Import library data structure
+const BUNDLES = ["Talent Detection", "Athlete Development", "Professional Practice"];
+const SPORTS = [
+  "Tennis","Squash","Padel","Table Tennis","Basketball","Volleyball","Handball",
+  "Football","Sprint Swimming","Distance Swimming","Sprint Running","Distance Running",
+  "Boxing","Karate","Taekwondo","Judo","Wrestling","BJJ",
+  "Weightlifting","Artistic Gymnastics","Rhythmic Gymnastics","Artistic Swimming",
+  "Triathlon","Pentathlon",
+];
+const CATEGORIES = [
+  "Speed & Acceleration",
+  "Change of Direction & Agility",
+  "Power & Explosiveness",
+  "Strength",
+  "Muscular Endurance",
+  "Aerobic & Anaerobic Capacity",
+  "Stability, Mobility & Injury Screening",
+  "Balance & Coordination",
+  "Movement Literacy",
+  "Reactivity & Neural Coordination",
+  "Rhythm & Timing",
+  "Anthropometrics",
 ];
 
-function Above13Tag() {
-  return (
-    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 font-medium border border-blue-500/20">
-      <Tag className="w-2.5 h-2.5" />
-      Above 13
-    </span>
-  );
+// Mock test data
+interface MockTest {
+  name: string;
+  category: string;
+  sports: string[] | "all";
+  unit: string;
+  bundle: string;
 }
+
+const MOCK_TESTS: MockTest[] = [
+  { name: "30m Sprint", category: "Speed & Acceleration", sports: ["Football", "Sprint Running", "Basketball"], unit: "s", bundle: "Talent Detection" },
+  { name: "Illinois Agility Test", category: "Change of Direction & Agility", sports: ["Football", "Basketball", "Handball"], unit: "s", bundle: "Talent Detection" },
+  { name: "505 Agility Test", category: "Change of Direction & Agility", sports: "all", unit: "s", bundle: "Athlete Development" },
+  { name: "Countermovement Jump (CMJ)", category: "Power & Explosiveness", sports: "all", unit: "cm", bundle: "Talent Detection" },
+  { name: "Standing Broad Jump", category: "Power & Explosiveness", sports: "all", unit: "cm", bundle: "Talent Detection" },
+  { name: "Grip Strength", category: "Strength", sports: "all", unit: "kg", bundle: "Talent Detection" },
+  { name: "1RM Back Squat", category: "Strength", sports: ["Weightlifting", "Wrestling"], unit: "kg", bundle: "Professional Practice" },
+  { name: "Push-Up Endurance Test", category: "Muscular Endurance", sports: "all", unit: "reps", bundle: "Athlete Development" },
+  { name: "Yo-Yo Test L1", category: "Aerobic & Anaerobic Capacity", sports: ["Football", "Basketball"], unit: "m", bundle: "Talent Detection" },
+  { name: "Sit & Reach", category: "Stability, Mobility & Injury Screening", sports: "all", unit: "cm", bundle: "Athlete Development" },
+  { name: "Single-Leg Balance Test", category: "Balance & Coordination", sports: ["Artistic Gymnastics", "Taekwondo"], unit: "s", bundle: "Talent Detection" },
+  { name: "Simple Reaction Time", category: "Reactivity & Neural Coordination", sports: ["Boxing", "Table Tennis"], unit: "ms", bundle: "Talent Detection" },
+  { name: "Anthropometric Battery", category: "Anthropometrics", sports: "all", unit: "cm/kg", bundle: "Talent Detection" },
+];
 
 // ─── Time options ─────────────────────────────────────────────────────────────
 const TIME_OPTIONS: string[] = [];
@@ -80,13 +110,8 @@ function BookingForm() {
   const [comments, setComments]               = useState<string>("");
   const [selectedTests, setSelectedTests]     = useState<SelectedTests>({});
   const [expandedBundles, setExpandedBundles] = useState<Set<string>>(new Set());
+  const [expandedSports, setExpandedSports]   = useState<Set<string>>(new Set());
   const [submitted, setSubmitted]             = useState(false);
-
-  // Derived
-  const categories = Object.entries(testCategories) as [
-    string,
-    { name: string; unit: string }[]
-  ][];
 
   const selectedGroup = groups.find((g) => g.id === selectedGroupId);
 
@@ -94,51 +119,85 @@ function BookingForm() {
     Array.from(tests).map((t) => ({ category: cat, name: t }))
   );
 
+  // Helper to get tests for a given bundle, sport, and category
+  const getTests = useMemo(() => {
+    return (bundle: string, sport: string, category: string): MockTest[] => {
+      return MOCK_TESTS.filter(
+        (t) =>
+          t.bundle === bundle &&
+          t.category === category &&
+          (t.sports === "all" || t.sports.includes(sport))
+      );
+    };
+  }, []);
+
+  // Helper to get tests by category only (for Talent Detection)
+  const getTestsByCategory = useMemo(() => {
+    return (bundle: string, category: string): MockTest[] => {
+      return MOCK_TESTS.filter((t) => t.bundle === bundle && t.category === category);
+    };
+  }, []);
+
   // ─── Helpers ────────────────────────────────────────────────────────────────
-  function toggleBundle(category: string, tests: { name: string }[]) {
+  function toggleTest(testName: string) {
     setSelectedTests((prev) => {
-      const next = { ...prev };
-      const current = next[category];
+      const key = `_${testName}`;
+      const s = new Set(prev[key] ?? []);
+      if (s.has(testName)) s.delete(testName);
+      else s.add(testName);
+      return { ...prev, [key]: s };
+    });
+  }
+
+  function toggleBundle(bundle: string, sport: string, category: string, tests: MockTest[]) {
+    setSelectedTests((prev) => {
+      const key = `_${bundle}_${sport}_${category}`;
+      const current = new Set(prev[key]);
       const allNames = tests.map((t) => t.name);
-      const allSelected = current && allNames.every((n) => current.has(n));
+      const allSelected = allNames.every((n) => current.has(n));
+
       if (allSelected) {
-        const s = new Set(current);
-        allNames.forEach((n) => s.delete(n));
-        next[category] = s;
+        allNames.forEach((n) => current.delete(n));
       } else {
-        next[category] = new Set(allNames);
+        allNames.forEach((n) => current.add(n));
       }
+
+      if (current.size === 0) {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      }
+      return { ...prev, [key]: current };
+    });
+  }
+
+  function isBundleFullySelected(tests: MockTest[]) {
+    return tests.length > 0 && tests.every((t) =>
+      Object.values(selectedTests).some((s) => s.has(t.name))
+    );
+  }
+
+  function isBundlePartiallySelected(tests: MockTest[]) {
+    const selected = tests.filter((t) =>
+      Object.values(selectedTests).some((s) => s.has(t.name))
+    );
+    return selected.length > 0 && selected.length < tests.length;
+  }
+
+  function toggleExpand(key: string) {
+    setExpandedBundles((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }
 
-  function toggleTest(category: string, testName: string) {
-    setSelectedTests((prev) => {
-      const s = new Set(prev[category] ?? []);
-      if (s.has(testName)) s.delete(testName);
-      else s.add(testName);
-      return { ...prev, [category]: s };
-    });
-  }
-
-  function isBundleFullySelected(category: string, tests: { name: string }[]) {
-    const s = selectedTests[category];
-    return !!s && tests.every((t) => s.has(t.name));
-  }
-
-  function isBundlePartiallySelected(category: string, tests: { name: string }[]) {
-    const s = selectedTests[category];
-    if (!s) return false;
-    const names = tests.map((t) => t.name);
-    const count = names.filter((n) => s.has(n)).length;
-    return count > 0 && count < names.length;
-  }
-
-  function toggleExpand(category: string) {
-    setExpandedBundles((prev) => {
+  function toggleSportExpand(key: string) {
+    setExpandedSports((prev) => {
       const next = new Set(prev);
-      if (next.has(category)) next.delete(category);
-      else next.add(category);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }
@@ -279,90 +338,191 @@ function BookingForm() {
               {/* Test Battery */}
               <Section icon={<ClipboardList className="w-4 h-4" />} title="Test Battery">
                 <p className="text-xs text-muted-foreground mb-3">
-                  Select entire bundles or pick individual tests. Tags indicate age recommendations.
+                  Select from bundles organized by categories. Structure matches the library.
                 </p>
-                <div className="space-y-2">
-                  {categories.map(([category, tests]) => {
-                    const isExpanded     = expandedBundles.has(category);
-                    const fullSelected   = isBundleFullySelected(category, tests);
-                    const partialSelected = isBundlePartiallySelected(category, tests);
-                    const hasAbove13Bundle = ABOVE_13_BUNDLES.includes(category);
+                <div className="space-y-3">
+                  {BUNDLES.map((bundle) => {
+                    const bundleKey = bundle;
+                    const isExpanded = expandedBundles.has(bundleKey);
+                    const isTalentDetection = bundle === "Talent Detection";
 
                     return (
-                      <div
-                        key={category}
-                        className={cn(
-                          "rounded-xl border transition-all",
-                          fullSelected
-                            ? "border-primary/50 bg-primary/5"
-                            : partialSelected
-                            ? "border-primary/30 bg-primary/3"
-                            : "border-border bg-card"
-                        )}
-                      >
+                      <div key={bundle} className="border border-border rounded-xl overflow-hidden">
                         {/* Bundle Header */}
-                        <div className="flex items-center gap-3 px-4 py-3">
-                          {/* Bundle checkbox */}
-                          <Checkbox
-                            checked={fullSelected ? true : partialSelected ? "indeterminate" : false}
-                            onCheckedChange={() => toggleBundle(category, tests)}
-                          />
-
-                          {/* Expand/collapse */}
-                          <button
-                            type="button"
-                            className="flex-1 flex items-center gap-2 text-left"
-                            onClick={() => toggleExpand(category)}
-                          >
-                            {isExpanded
-                              ? <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
-                              : <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                            }
-                            <span className="text-sm font-semibold text-foreground">
-                              {category}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              ({tests.length} tests)
-                            </span>
-                            {hasAbove13Bundle && (
-                              <span className="ml-1"><Above13Tag /></span>
+                        <button
+                          type="button"
+                          onClick={() => toggleExpand(bundleKey)}
+                          className="w-full flex items-center justify-between px-4 py-3 bg-card hover:bg-muted/30 transition text-left"
+                        >
+                          <div className="flex items-center gap-3">
+                            {isExpanded ? (
+                              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
                             )}
-                            {(fullSelected || partialSelected) && (
-                              <span className="ml-auto text-xs text-primary font-medium">
-                                {Array.from(selectedTests[category] ?? []).length}/{tests.length} selected
-                              </span>
-                            )}
-                          </button>
-                        </div>
+                            <span className="font-semibold text-foreground">{bundle}</span>
+                          </div>
+                        </button>
 
-                        {/* Individual Tests */}
+                        {/* Bundle Content */}
                         {isExpanded && (
-                          <div className="border-t border-border divide-y divide-border">
-                            {tests.map((test) => {
-                              const isSelected = selectedTests[category]?.has(test.name) ?? false;
-                              const hasAbove13Test = ABOVE_13_TESTS.includes(test.name);
-                              return (
-                                <label
-                                  key={test.name}
-                                  className={cn(
-                                    "flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors",
-                                    isSelected ? "bg-primary/5" : "hover:bg-muted/40"
-                                  )}
-                                >
-                                  <Checkbox
-                                    checked={isSelected}
-                                    onCheckedChange={() => toggleTest(category, test.name)}
-                                  />
-                                  <span className="flex-1 text-sm text-foreground">
-                                    {test.name}
-                                    <span className="text-xs text-muted-foreground ml-1.5">
-                                      ({test.unit})
-                                    </span>
-                                  </span>
-                                  {hasAbove13Test && <Above13Tag />}
-                                </label>
-                              );
-                            })}
+                          <div className="divide-y divide-border border-t border-border">
+                            {isTalentDetection ? (
+                              // Talent Detection: Categories only
+                              CATEGORIES.map((category) => {
+                                const catTests = getTestsByCategory(bundle, category);
+                                if (catTests.length === 0) return null;
+
+                                const catKey = `${bundle}_${category}`;
+                                const isCatExpanded = expandedSports.has(catKey);
+                                const fullSelected = isBundleFullySelected(catTests);
+                                const partialSelected = isBundlePartiallySelected(catTests);
+
+                                return (
+                                  <div key={category}>
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleSportExpand(catKey)}
+                                      className="w-full flex items-center justify-between px-6 py-3 bg-muted/20 hover:bg-muted/40 transition text-left"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        {isCatExpanded ? (
+                                          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                                        ) : (
+                                          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                                        )}
+                                        <span className="text-sm font-medium text-foreground">{category}</span>
+                                        <span className="text-xs text-muted-foreground">({catTests.length})</span>
+                                      </div>
+                                    </button>
+
+                                    {isCatExpanded && (
+                                      <div className="px-6 divide-y divide-border/50">
+                                        {catTests.map((test) => {
+                                          const isSelected = Object.values(selectedTests).some((s) => s.has(test.name));
+                                          return (
+                                            <label
+                                              key={test.name}
+                                              className={cn(
+                                                "flex items-center gap-3 px-0 py-2.5 cursor-pointer transition-colors hover:bg-muted/20",
+                                                isSelected ? "bg-primary/5" : ""
+                                              )}
+                                            >
+                                              <Checkbox
+                                                checked={isSelected}
+                                                onCheckedChange={() => toggleTest(test.name)}
+                                              />
+                                              <span className="flex-1 text-sm text-foreground">
+                                                {test.name}
+                                                <span className="text-xs text-muted-foreground ml-1.5">
+                                                  ({test.unit})
+                                                </span>
+                                              </span>
+                                            </label>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              // Other bundles: Sports > Categories
+                              SPORTS.map((sport) => {
+                                const sportKey = `${bundle}_${sport}`;
+                                const isSportExpanded = expandedSports.has(sportKey);
+
+                                const hasSportTests = CATEGORIES.some(
+                                  (cat) => getTests(bundle, sport, cat).length > 0
+                                );
+
+                                if (!hasSportTests) return null;
+
+                                return (
+                                  <div key={sport}>
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleSportExpand(sportKey)}
+                                      className="w-full flex items-center justify-between px-6 py-3 bg-muted/20 hover:bg-muted/40 transition text-left"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        {isSportExpanded ? (
+                                          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                                        ) : (
+                                          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                                        )}
+                                        <span className="text-sm font-medium text-foreground">{sport}</span>
+                                      </div>
+                                    </button>
+
+                                    {isSportExpanded && (
+                                      <div className="divide-y divide-border/50">
+                                        {CATEGORIES.map((category) => {
+                                          const catTests = getTests(bundle, sport, category);
+                                          if (catTests.length === 0) return null;
+
+                                          const catKey = `${bundle}_${sport}_${category}`;
+                                          const isCatExpanded = expandedSports.has(catKey);
+                                          const fullSelected = isBundleFullySelected(catTests);
+                                          const partialSelected = isBundlePartiallySelected(catTests);
+
+                                          return (
+                                            <div key={category}>
+                                              <button
+                                                type="button"
+                                                onClick={() => toggleSportExpand(catKey)}
+                                                className="w-full flex items-center justify-between px-8 py-2.5 hover:bg-muted/20 transition text-left"
+                                              >
+                                                <div className="flex items-center gap-2">
+                                                  <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+                                                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                                    {category}
+                                                  </span>
+                                                  <span className="text-xs text-muted-foreground/60">({catTests.length})</span>
+                                                </div>
+                                                {isCatExpanded ? (
+                                                  <ChevronDown className="w-3 h-3 text-muted-foreground/50" />
+                                                ) : (
+                                                  <ChevronRight className="w-3 h-3 text-muted-foreground/50" />
+                                                )}
+                                              </button>
+
+                                              {isCatExpanded && (
+                                                <div className="px-8 divide-y divide-border/50">
+                                                  {catTests.map((test) => {
+                                                    const isSelected = Object.values(selectedTests).some((s) => s.has(test.name));
+                                                    return (
+                                                      <label
+                                                        key={test.name}
+                                                        className={cn(
+                                                          "flex items-center gap-3 px-0 py-2.5 cursor-pointer transition-colors hover:bg-muted/20",
+                                                          isSelected ? "bg-primary/5" : ""
+                                                        )}
+                                                      >
+                                                        <Checkbox
+                                                          checked={isSelected}
+                                                          onCheckedChange={() => toggleTest(test.name)}
+                                                        />
+                                                        <span className="flex-1 text-sm text-foreground">
+                                                          {test.name}
+                                                          <span className="text-xs text-muted-foreground ml-1.5">
+                                                            ({test.unit})
+                                                          </span>
+                                                        </span>
+                                                      </label>
+                                                    );
+                                                  })}
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })
+                            )}
                           </div>
                         )}
                       </div>

@@ -1,45 +1,29 @@
 import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { GroupProvider } from "@/contexts/GroupContext";
-import { GroupSelectorBar } from "./GroupSelectorBar";
-import {
-  BarChart3,
-  Users,
-  Calendar,
-  CreditCard,
-  LogOut,
-  Menu,
-  Settings,
-} from "lucide-react";
+import { BarChart3, Calendar, CreditCard, LogOut, Menu, Settings } from "lucide-react";
 import { useState } from "react";
 
-const coachNavItems = [
-  { label: "Dashboard", icon: BarChart3, href: "/coach/dashboard" },
+const athleteNavItems = [
+  { label: "Dashboard", icon: BarChart3, href: "/athlete/dashboard" },
   {
-    label: "Benchmarking Comparisons",
-    icon: Users,
-    href: "/coach/groups",
-  },
-  { label: "Test Day Booking", icon: Calendar, href: "/coach/booking" },
-  {
-    label: "Service Confirmations",
-    icon: CreditCard,
-    href: "/coach/confirmations",
+    label: "Test Days & Confirmations",
+    icon: Calendar,
+    href: "/athlete/confirmations",
   },
   {
-    label: "Subscription & Payments",
+    label: "Subscriptions & Payments",
     icon: CreditCard,
-    href: "/coach/subscriptions",
+    href: "/athlete/subscriptions",
   },
   {
     label: "Account Settings",
     icon: Settings,
-    href: "/coach/account-settings",
+    href: "/athlete/account-settings",
   },
 ];
 
-export function CoachLayout({ children }: { children: ReactNode }) {
+export function AthleteLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -50,7 +34,7 @@ export function CoachLayout({ children }: { children: ReactNode }) {
     navigate("/login");
   };
 
-  const layoutContent = (
+  return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <aside
@@ -60,14 +44,14 @@ export function CoachLayout({ children }: { children: ReactNode }) {
       >
         {/* Logo */}
         <div className="p-6 border-b border-sidebar-border">
-          <Link to="/coach/dashboard" className="flex items-center gap-3">
+          <Link to="/athlete/dashboard" className="flex items-center gap-3">
             <img src="https://cdn.builder.io/api/v1/image/assets%2F6c6007d7a3904b5cb566ab5a6dd6c538%2F512043dd4e0c4d2b974e32c615eeae69?format=webp" alt="OnCourt" className="h-10 w-auto" />
           </Link>
         </div>
 
         {/* Navigation Items */}
         <nav className="flex-1 px-4 py-6 space-y-2">
-          {coachNavItems.map((item) => {
+          {athleteNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.href;
             return (
@@ -150,18 +134,9 @@ export function CoachLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        {/* Group Selector Bar */}
-        <GroupSelectorBar />
-
         {/* Page Content */}
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
     </div>
-  );
-
-  return (
-    <GroupProvider>
-      {layoutContent}
-    </GroupProvider>
   );
 }

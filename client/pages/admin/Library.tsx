@@ -189,11 +189,23 @@ export default function AdminLibrary() {
       t.category === category
     );
   }
+
+  function getTestsByCategory(bundle: string, category: string) {
+    return filtered.filter((t) =>
+      t.bundles.includes(bundle) &&
+      t.category === category
+    );
+  }
+
   function sportHasTests(bundle: string, sport: string) {
     return categories.some((cat) => getTests(bundle, sport, cat).length > 0);
   }
   function bundleHasTests(bundle: string) {
     return sports.some((sp) => sportHasTests(bundle, sp));
+  }
+
+  function bundleHasTestsByCategory(bundle: string) {
+    return categories.some((cat) => getTestsByCategory(bundle, cat).length > 0);
   }
 
   const isExp = (key: string) => autoExpand || expanded.has(key);
@@ -305,7 +317,11 @@ export default function AdminLibrary() {
         {/* ── Nested accordion ── */}
         <div className="space-y-3">
           {bundles.map((bundle) => {
-            if (!bundleHasTests(bundle)) return null;
+            const isTalentDetection = bundle === "Talent Detection";
+
+            if (!isTalentDetection && !bundleHasTests(bundle)) return null;
+            if (isTalentDetection && !bundleHasTestsByCategory(bundle)) return null;
+
             return (
               <div key={bundle} className="border border-border rounded-xl overflow-hidden">
                 <button
@@ -324,86 +340,144 @@ export default function AdminLibrary() {
 
                 {isExp(bundle) && (
                   <div className="divide-y divide-border border-t border-border">
-                    {sports.map((sport) => {
-                      if (!sportHasTests(bundle, sport)) return null;
-                      const sportKey = `${bundle}::${sport}`;
-                      return (
-                        <div key={sport}>
-                          <button
-                            onClick={() => toggle(sportKey)}
-                            className="w-full flex items-center justify-between px-6 py-3 bg-muted/20 hover:bg-muted/40 transition text-left"
-                          >
-                            <span className="text-sm font-medium text-foreground">{sport}</span>
-                            {isExp(sportKey) ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />}
-                          </button>
+                    {isTalentDetection ? (
+                      // Talent Detection: Categories only (no Sports)
+                      categories.map((cat) => {
+                        const catTests = getTestsByCategory(bundle, cat);
+                        if (!catTests.length) return null;
+                        const catKey = `${bundle}::${cat}`;
+                        return (
+                          <div key={cat}>
+                            <button
+                              onClick={() => toggle(catKey)}
+                              className="w-full flex items-center justify-between px-6 py-3 bg-muted/20 hover:bg-muted/40 transition text-left"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+                                <span className="text-sm font-medium text-foreground">{cat}</span>
+                                <span className="text-xs text-muted-foreground/60">({catTests.length})</span>
+                              </div>
+                              {isExp(catKey) ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />}
+                            </button>
 
-                          {isExp(sportKey) && (
-                            <div className="divide-y divide-border/50">
-                              {categories.map((cat) => {
-                                const catTests = getTests(bundle, sport, cat);
-                                if (!catTests.length) return null;
-                                const catKey = `${bundle}::${sport}::${cat}`;
-                                return (
-                                  <div key={cat}>
-                                    <button
-                                      onClick={() => toggle(catKey)}
-                                      className="w-full flex items-center justify-between px-8 py-2.5 hover:bg-muted/20 transition text-left"
-                                    >
-                                      <div className="flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
-                                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{cat}</span>
-                                        <span className="text-xs text-muted-foreground/60">({catTests.length})</span>
-                                      </div>
-                                      {isExp(catKey) ? <ChevronDown className="w-3 h-3 text-muted-foreground/50" /> : <ChevronRight className="w-3 h-3 text-muted-foreground/50" />}
-                                    </button>
+                            {isExp(catKey) && (
+                              <div className="px-6 pb-3">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="border-b border-border/50">
+                                      {["Test Name","Equipment","Age Range","Outputs","Presentation","Status"].map((h) => (
+                                        <th key={h} className="pb-2 pt-1 text-left text-muted-foreground font-semibold uppercase tracking-wide pr-4 whitespace-nowrap">{h}</th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {catTests.map((t) => (
+                                      <tr key={t.id} className="border-b border-border/30 last:border-0 hover:bg-muted/10 transition">
+                                        <td className="py-2.5 pr-4 font-medium text-foreground whitespace-nowrap">
+                                          {t.name}
+                                          {t.supervisionRequired && <AlertTriangle className="w-3 h-3 text-yellow-400 inline ml-1.5" aria-label="Supervision required" />}
+                                        </td>
+                                        <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{t.equipmentLevel}</td>
+                                        <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">
+                                          {t.minAge !== null || t.maxAge !== null ? `${t.minAge ?? "—"}–${t.maxAge ?? "∞"}` : "Any"}
+                                        </td>
+                                        <td className="py-2.5 pr-4 text-muted-foreground">{t.outputVars.map((v) => `${v.label} (${v.unit})`).join(", ")}</td>
+                                        <td className="py-2.5 pr-4 text-muted-foreground">{t.presentationTypes.join(", ")}</td>
+                                        <td className="py-2.5">
+                                          <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_CLS[t.status]}`}>{t.status}</span>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      // Other bundles: Sports > Categories
+                      sports.map((sport) => {
+                        if (!sportHasTests(bundle, sport)) return null;
+                        const sportKey = `${bundle}::${sport}`;
+                        return (
+                          <div key={sport}>
+                            <button
+                              onClick={() => toggle(sportKey)}
+                              className="w-full flex items-center justify-between px-6 py-3 bg-muted/20 hover:bg-muted/40 transition text-left"
+                            >
+                              <span className="text-sm font-medium text-foreground">{sport}</span>
+                              {isExp(sportKey) ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />}
+                            </button>
 
-                                    {isExp(catKey) && (
-                                      <div className="px-8 pb-3">
-                                        <table className="w-full text-xs">
-                                          <thead>
-                                            <tr className="border-b border-border/50">
-                                              {["Test Name","Bundles","Equipment","Age Range","Outputs","Presentation","Status"].map((h) => (
-                                                <th key={h} className="pb-2 pt-1 text-left text-muted-foreground font-semibold uppercase tracking-wide pr-4 whitespace-nowrap">{h}</th>
-                                              ))}
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            {catTests.map((t) => (
-                                              <tr key={t.id} className="border-b border-border/30 last:border-0 hover:bg-muted/10 transition">
-                                                <td className="py-2.5 pr-4 font-medium text-foreground whitespace-nowrap">
-                                                  {t.name}
-                                                  {t.supervisionRequired && <AlertTriangle className="w-3 h-3 text-yellow-400 inline ml-1.5" aria-label="Supervision required" />}
-                                                </td>
-                                                <td className="py-2.5 pr-4">
-                                                  <div className="flex flex-wrap gap-1">
-                                                    {t.bundles.map((b) => (
-                                                      <span key={b} className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-primary/15 text-primary border border-primary/20">{b.split(" ")[0]}</span>
-                                                    ))}
-                                                  </div>
-                                                </td>
-                                                <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{t.equipmentLevel}</td>
-                                                <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">
-                                                  {t.minAge !== null || t.maxAge !== null ? `${t.minAge ?? "—"}–${t.maxAge ?? "∞"}` : "Any"}
-                                                </td>
-                                                <td className="py-2.5 pr-4 text-muted-foreground">{t.outputVars.map((v) => `${v.label} (${v.unit})`).join(", ")}</td>
-                                                <td className="py-2.5 pr-4 text-muted-foreground">{t.presentationTypes.join(", ")}</td>
-                                                <td className="py-2.5">
-                                                  <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_CLS[t.status]}`}>{t.status}</span>
-                                                </td>
+                            {isExp(sportKey) && (
+                              <div className="divide-y divide-border/50">
+                                {categories.map((cat) => {
+                                  const catTests = getTests(bundle, sport, cat);
+                                  if (!catTests.length) return null;
+                                  const catKey = `${bundle}::${sport}::${cat}`;
+                                  return (
+                                    <div key={cat}>
+                                      <button
+                                        onClick={() => toggle(catKey)}
+                                        className="w-full flex items-center justify-between px-8 py-2.5 hover:bg-muted/20 transition text-left"
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+                                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{cat}</span>
+                                          <span className="text-xs text-muted-foreground/60">({catTests.length})</span>
+                                        </div>
+                                        {isExp(catKey) ? <ChevronDown className="w-3 h-3 text-muted-foreground/50" /> : <ChevronRight className="w-3 h-3 text-muted-foreground/50" />}
+                                      </button>
+
+                                      {isExp(catKey) && (
+                                        <div className="px-8 pb-3">
+                                          <table className="w-full text-xs">
+                                            <thead>
+                                              <tr className="border-b border-border/50">
+                                                {["Test Name","Bundles","Equipment","Age Range","Outputs","Presentation","Status"].map((h) => (
+                                                  <th key={h} className="pb-2 pt-1 text-left text-muted-foreground font-semibold uppercase tracking-wide pr-4 whitespace-nowrap">{h}</th>
+                                                ))}
                                               </tr>
-                                            ))}
-                                          </tbody>
-                                        </table>
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                                            </thead>
+                                            <tbody>
+                                              {catTests.map((t) => (
+                                                <tr key={t.id} className="border-b border-border/30 last:border-0 hover:bg-muted/10 transition">
+                                                  <td className="py-2.5 pr-4 font-medium text-foreground whitespace-nowrap">
+                                                    {t.name}
+                                                    {t.supervisionRequired && <AlertTriangle className="w-3 h-3 text-yellow-400 inline ml-1.5" aria-label="Supervision required" />}
+                                                  </td>
+                                                  <td className="py-2.5 pr-4">
+                                                    <div className="flex flex-wrap gap-1">
+                                                      {t.bundles.map((b) => (
+                                                        <span key={b} className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-primary/15 text-primary border border-primary/20">{b.split(" ")[0]}</span>
+                                                      ))}
+                                                    </div>
+                                                  </td>
+                                                  <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{t.equipmentLevel}</td>
+                                                  <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">
+                                                    {t.minAge !== null || t.maxAge !== null ? `${t.minAge ?? "—"}–${t.maxAge ?? "∞"}` : "Any"}
+                                                  </td>
+                                                  <td className="py-2.5 pr-4 text-muted-foreground">{t.outputVars.map((v) => `${v.label} (${v.unit})`).join(", ")}</td>
+                                                  <td className="py-2.5 pr-4 text-muted-foreground">{t.presentationTypes.join(", ")}</td>
+                                                  <td className="py-2.5">
+                                                    <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_CLS[t.status]}`}>{t.status}</span>
+                                                  </td>
+                                                </tr>
+                                              ))}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 )}
               </div>

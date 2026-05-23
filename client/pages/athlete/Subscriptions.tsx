@@ -1,65 +1,65 @@
-import { CoachLayout } from "@/components/CoachLayout";
+import { AthleteLayout } from "@/components/AthleteLayout";
 import { useState } from "react";
 import { CreditCard, AlertCircle, CheckCircle2, X } from "lucide-react";
 
-type CoachTier = "Free" | "Plus" | "Premium";
+type AthleteTier = "Starter" | "Standard" | "Pro";
 
-interface CoachPlan {
-  name: CoachTier;
+interface AthletePlan {
+  name: AthleteTier;
   price: string;
+  annualPrice?: string;
   description: string;
   features: Record<string, string | boolean>;
   comingSoon: boolean;
 }
 
-const COACH_PLANS: CoachPlan[] = [
+const ATHLETE_PLANS: AthletePlan[] = [
   {
-    name: "Free",
-    price: "Free",
-    description: "Perfect for getting started",
+    name: "Starter",
+    price: "400 EGP",
+    annualPrice: "4,800 EGP",
+    description: "Get started with performance tracking",
     comingSoon: false,
     features: {
-      "Test Battery": "Standard Battery",
-      Equipment: "Automated",
-      "Data Visualization": "Simple",
-      "Filter & Comparisons": true,
-      Benchmarking: false,
-      "Priority Booking": false,
-      "Training Logger (Coming Soon)": "Logger only",
+      "Test Day Access": "350 EGP per visit",
+      "Measurements & Tracking": "Free",
+      "Equipment Stack": "Automated",
+      "Performance Review Report": "Foundational Summary",
+      "Review Session": "Upon request",
+      "Training Logger (Coming Soon)": false,
       "Diet Logger (Coming Soon)": false,
       "AI Companion (Coming Soon)": false,
     },
   },
   {
-    name: "Plus",
-    price: "Coming Soon",
-    description: "Enhanced features for growth",
+    name: "Standard",
+    price: "800 EGP",
+    annualPrice: "9,600 EGP",
+    description: "Most popular - comprehensive tracking",
     comingSoon: false,
     features: {
-      "Test Battery": "Customized",
-      Equipment: "Automated",
-      "Data Visualization": "Detailed",
-      "Filter & Comparisons": true,
-      Benchmarking: "Standard",
-      "Priority Booking": "Two weeks",
-      "Training Logger (Coming Soon)": "Logger + Tracker",
+      "Test Day Access": "1 Free visit + paid",
+      "Measurements & Tracking": "Free",
+      "Equipment Stack": "Automated",
+      "Performance Review Report": "Advanced Scientific Report",
+      "Review Session": "Quarterly",
+      "Training Logger (Coming Soon)": true,
       "Diet Logger (Coming Soon)": true,
       "AI Companion (Coming Soon)": "Limited",
     },
   },
   {
-    name: "Premium",
-    price: "Coming Soon",
-    description: "All-in-one elite solution",
+    name: "Pro",
+    price: "TBD",
+    description: "Elite training and performance management",
     comingSoon: true,
     features: {
-      "Test Battery": "Pool of 250+ Tests",
-      Equipment: "Elite",
-      "Data Visualization": "Personalized",
-      "Filter & Comparisons": true,
-      Benchmarking: "Advanced",
-      "Priority Booking": "Same week",
-      "Training Logger (Coming Soon)": "Full tracker",
+      "Test Day Access": "2 Free visits per month",
+      "Measurements & Tracking": "Free",
+      "Equipment Stack": "Elite",
+      "Performance Review Report": "Personalized High-Performance Report",
+      "Review Session": "Monthly",
+      "Training Logger (Coming Soon)": true,
       "Diet Logger (Coming Soon)": true,
       "AI Companion (Coming Soon)": "Full access",
     },
@@ -83,29 +83,29 @@ function FeatureItem({ name, value }: { name: string; value: string | boolean })
   );
 }
 
-export default function CoachSubscriptions() {
-  const [currentPlan] = useState<CoachTier>("Free");
+export default function AthleteSubscriptions() {
+  const [currentPlan] = useState<AthleteTier>("Starter");
   const [renewalDate] = useState("2026-08-14");
 
   return (
-    <CoachLayout>
+    <AthleteLayout>
       <div className="space-y-8">
         {/* Page Header */}
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">
             Subscription & Payments
           </h1>
-          <p className="text-gray-400">Manage your coaching plan and billing</p>
+          <p className="text-gray-400">Manage your performance tracking plan</p>
         </div>
 
         {/* Current Plan Card */}
-        <div className="bg-gradient-to-br from-blue-900 to-blue-800 border border-blue-700 rounded-lg p-8">
+        <div className="bg-gradient-to-br from-purple-900 to-purple-800 border border-purple-700 rounded-lg p-8">
           <div className="flex items-start justify-between mb-6">
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">
-                Current Plan: <span className="text-blue-300">{currentPlan}</span>
+                Current Plan: <span className="text-purple-300">{currentPlan}</span>
               </h2>
-              <p className="text-blue-200">
+              <p className="text-purple-200">
                 Your plan renews on{" "}
                 <span className="font-semibold">
                   {new Date(renewalDate).toLocaleDateString()}
@@ -113,15 +113,15 @@ export default function CoachSubscriptions() {
               </p>
             </div>
             <div className="p-4 bg-white/10 rounded-lg">
-              <CreditCard className="w-8 h-8 text-blue-300" />
+              <CreditCard className="w-8 h-8 text-purple-300" />
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors">
+            <button className="flex-1 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors">
               Upgrade Plan
             </button>
-            <button className="flex-1 px-6 py-3 border border-blue-400 hover:bg-blue-500/20 text-blue-300 font-semibold rounded-lg transition-colors">
+            <button className="flex-1 px-6 py-3 border border-purple-400 hover:bg-purple-500/20 text-purple-300 font-semibold rounded-lg transition-colors">
               Cancel Plan
             </button>
           </div>
@@ -131,12 +131,12 @@ export default function CoachSubscriptions() {
         <div>
           <h2 className="text-2xl font-bold text-white mb-6">All Available Plans</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {COACH_PLANS.map((plan) => (
+            {ATHLETE_PLANS.map((plan) => (
               <div
                 key={plan.name}
                 className={`border rounded-lg p-6 transition-all ${
                   currentPlan === plan.name
-                    ? "border-blue-500 bg-blue-500/10 ring-2 ring-blue-500"
+                    ? "border-purple-500 bg-purple-500/10 ring-2 ring-purple-500"
                     : "border-gray-700 bg-gray-800 hover:border-gray-600"
                 }`}
               >
@@ -151,7 +151,14 @@ export default function CoachSubscriptions() {
                     )}
                   </div>
                   <p className="text-gray-400 text-sm mb-3">{plan.description}</p>
-                  <p className="text-2xl font-bold text-white">{plan.price}</p>
+                  <div>
+                    <p className="text-3xl font-bold text-white">{plan.price}</p>
+                    {plan.annualPrice && (
+                      <p className="text-xs text-gray-400">
+                        or {plan.annualPrice}/year
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Features List */}
@@ -165,7 +172,7 @@ export default function CoachSubscriptions() {
                 {currentPlan === plan.name ? (
                   <button
                     disabled
-                    className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg cursor-not-allowed opacity-50"
+                    className="w-full py-3 bg-purple-600 text-white font-semibold rounded-lg cursor-not-allowed opacity-50"
                   >
                     Current Plan
                   </button>
@@ -177,7 +184,7 @@ export default function CoachSubscriptions() {
                     Coming Soon
                   </button>
                 ) : (
-                  <button className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors">
+                  <button className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors">
                     Upgrade to {plan.name}
                   </button>
                 )}
@@ -187,15 +194,15 @@ export default function CoachSubscriptions() {
         </div>
 
         {/* Info Alert */}
-        <div className="flex gap-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+        <div className="flex gap-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+          <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm text-yellow-200">
-              Need help choosing a plan? Contact our support team or schedule a demo to find the perfect fit for your coaching needs.
+            <p className="text-sm text-blue-200">
+              Track your athletic performance with confidence. Choose the plan that matches your goals and unlock personalized insights.
             </p>
           </div>
         </div>
       </div>
-    </CoachLayout>
+    </AthleteLayout>
   );
 }

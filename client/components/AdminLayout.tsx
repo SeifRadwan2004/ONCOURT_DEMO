@@ -45,14 +45,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         {/* Logo */}
         <div className="p-6 border-b border-sidebar-border">
           <Link to="/admin/overview" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-sidebar-primary to-orange-600 rounded-lg flex items-center justify-center">
-              <span className="text-sidebar-primary-foreground font-bold">
-                OC
-              </span>
-            </div>
-            <span className="text-lg font-bold text-sidebar-foreground">
-              OnCourt
-            </span>
+            <img src="https://cdn.builder.io/api/v1/image/assets%2F6c6007d7a3904b5cb566ab5a6dd6c538%2F512043dd4e0c4d2b974e32c615eeae69?format=webp" alt="OnCourt" className="h-10 w-auto" />
           </Link>
         </div>
 

@@ -27,10 +27,7 @@ export default function Index() {
       <nav className="border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-accent to-orange-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">OC</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">OnCourt</span>
+            <img src="https://cdn.builder.io/api/v1/image/assets%2F6c6007d7a3904b5cb566ab5a6dd6c538%2F512043dd4e0c4d2b974e32c615eeae69?format=webp" alt="OnCourt" className="h-10 w-auto" />
           </Link>
           <Link to="/login">
             <Button className="bg-accent hover:bg-orange-600 text-accent-foreground">
@@ -183,10 +180,7 @@ export default function Index() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-br from-accent to-orange-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">OC</span>
-              </div>
-              <span className="font-semibold text-foreground">OnCourt</span>
+              <img src="https://cdn.builder.io/api/v1/image/assets%2F6c6007d7a3904b5cb566ab5a6dd6c538%2F512043dd4e0c4d2b974e32c615eeae69?format=webp" alt="OnCourt" className="h-8 w-auto" />
             </div>
             <p className="text-muted-foreground text-sm">
               © 2024 OnCourt. All rights reserved. Youth Athlete Talent

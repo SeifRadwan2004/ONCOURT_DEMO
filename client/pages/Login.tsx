@@ -35,23 +35,21 @@ export default function Login() {
     }
 
     login(email, password, selectedRole);
-    navigate(selectedRole === "coach" ? "/coach/dashboard" : "/admin/overview");
+    if (selectedRole === "coach") {
+      navigate("/coach/dashboard");
+    } else if (selectedRole === "admin") {
+      navigate("/admin/overview");
+    } else if (selectedRole === "athlete") {
+      navigate("/athlete/dashboard");
+    }
   };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <div className="inline-block mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-accent to-orange-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">OC</span>
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">OnCourt</h1>
-          <p className="text-muted-foreground">
-            Youth Athlete Talent Identification & Development
-          </p>
+        <div className="text-center pt-14 pb-14">
+          <img src="https://cdn.builder.io/api/v1/image/assets%2F6c6007d7a3904b5cb566ab5a6dd6c538%2F512043dd4e0c4d2b974e32c615eeae69?format=webp" alt="OnCourt" className="h-20 w-auto mx-auto" />
         </div>
 
         {/* Login Form */}
@@ -110,7 +108,7 @@ export default function Login() {
               <label className="block text-sm font-medium mb-3">
                 Select Your Role
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <button
                   type="button"
                   onClick={() => setSelectedRole("coach")}
@@ -132,6 +130,17 @@ export default function Login() {
                   }`}
                 >
                   Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole("athlete")}
+                  className={`py-3 px-4 rounded-lg font-medium transition-all ${
+                    selectedRole === "athlete"
+                      ? "bg-accent text-accent-foreground ring-2 ring-accent"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  Athlete
                 </button>
               </div>
             </div>
