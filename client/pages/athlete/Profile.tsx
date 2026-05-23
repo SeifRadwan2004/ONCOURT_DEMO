@@ -252,12 +252,6 @@ export default function AthleteProfile() {
                   fill="hsl(var(--accent))"
                   fillOpacity={0.6}
                 />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                  }}
-                />
               </RadarChart>
             </ResponsiveContainer>
           </div>

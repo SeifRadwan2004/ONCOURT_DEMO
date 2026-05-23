@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
   PlayCircle,
+  Layout,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -18,6 +19,7 @@ const adminNavItems = [
   { label: "Coaches & Clubs", icon: Users, href: "/admin/coaches" },
   { label: "Athletes & Parents", icon: Users, href: "/admin/athletes" },
   { label: "Analytics", icon: BarChart3, href: "/admin/analytics" },
+  { label: "Dashboard Manager", icon: Layout, href: "/admin/dashboard-manager" },
   { label: "Test Day Confirmations", icon: CheckSquare, href: "/admin/confirmations" },
   { label: "Active Test Days", icon: PlayCircle, href: "/admin/active-test-days" },
   { label: "Test Library", icon: BookOpen, href: "/admin/library" },
