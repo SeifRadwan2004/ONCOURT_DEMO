@@ -39,15 +39,6 @@ interface ChartField {
   manualValue?: number;
 }
 
-interface DashboardSection {
-  id: string;
-  type: "chart" | "info" | "metrics";
-  chartId?: string;
-  title: string;
-  width: "full" | "half" | "third";
-  order: number;
-}
-
 const chartTypes = [
   { id: "radar", label: "Spider/Radar Chart", description: "Multidimensional performance" },
   { id: "bar", label: "Bar Chart", description: "Compare values" },
@@ -136,7 +127,7 @@ export default function DashboardBuilder() {
             ...c,
             fields: [
               ...c.fields,
-              { id: `f${Date.now()}`, name: "New Field", source: "", calculation: "" },
+              { id: `f${Date.now()}`, name: "New Field", source: "auto" },
             ],
           };
         }
