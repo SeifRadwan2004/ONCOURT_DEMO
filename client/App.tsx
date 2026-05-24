@@ -38,7 +38,7 @@ import AdminLibrary from "./pages/admin/Library";
 import AdminActiveTestDays from "./pages/admin/ActiveTestDays";
 import AdminDashboardDesign from "./pages/admin/DashboardDesign";
 import AdminDashboardManager from "./pages/admin/DashboardManager";
-import AdminDashboardEditor from "./pages/admin/DashboardEditor";
+import AdminDashboardBuilder from "./pages/admin/DashboardBuilder";
 
 const queryClient = new QueryClient();
 
@@ -214,10 +214,10 @@ const AppRoutes = () => (
       }
     />
     <Route
-      path="/admin/dashboard-editor/:id"
+      path="/admin/dashboard-builder/:id"
       element={
         <ProtectedRoute>
-          <AdminDashboardEditor />
+          <AdminDashboardBuilder />
         </ProtectedRoute>
       }
     />

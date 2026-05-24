@@ -142,7 +142,7 @@ export default function DashboardManager() {
   };
 
   const handleEdit = (dashboard: Dashboard) => {
-    navigate(`/admin/dashboard-editor/${dashboard.id}`, { state: { dashboard } });
+    navigate(`/admin/dashboard-builder/${dashboard.id}`, { state: { dashboard } });
   };
 
   const toggleActive = (id: string) => {
