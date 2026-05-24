@@ -33,8 +33,10 @@ interface ChartData {
 interface ChartField {
   id: string;
   name: string;
-  source: string;
+  source: "auto" | "manual";
+  sourceTest?: string;
   calculation?: string;
+  manualValue?: number;
 }
 
 interface DashboardSection {
@@ -74,9 +76,6 @@ export default function DashboardBuilder() {
   const [title, setTitle] = useState(dashboard?.name || "");
   const [description, setDescription] = useState(dashboard?.description || "");
   
-  const [sections, setSections] = useState<DashboardSection[]>([
-    { id: "s1", type: "chart", chartId: "c1", title: "Performance Profile", width: "full", order: 1 },
-  ]);
 
   const [charts, setCharts] = useState<ChartData[]>([
     {
@@ -86,20 +85,19 @@ export default function DashboardBuilder() {
       height: 300,
       dataSource: "tests",
       fields: [
-        { id: "f1", name: "Speed", source: "10m Sprint", calculation: "100 - (value * 100 / 2)" },
-        { id: "f2", name: "COD", source: "5-10-5", calculation: "100 - (value * 100 / 8)" },
-        { id: "f3", name: "Explosiveness", source: "Vertical Jump", calculation: "value * 2" },
-        { id: "f4", name: "Strength", source: "Grip Right", calculation: "value * 1.5" },
+        { id: "f1", name: "Speed", source: "auto", sourceTest: "10m Sprint", calculation: "100 - (value * 100 / 2)" },
+        { id: "f2", name: "COD", source: "auto", sourceTest: "5-10-5", calculation: "100 - (value * 100 / 8)" },
+        { id: "f3", name: "Explosiveness", source: "auto", sourceTest: "Vertical Jump", calculation: "value * 2" },
+        { id: "f4", name: "Strength", source: "auto", sourceTest: "Grip Right", calculation: "value * 1.5" },
       ],
       chartConfig: { showLegend: true, showTooltip: false },
     },
   ]);
 
-  const [activeTab, setActiveTab] = useState("basic");
   const [editingChartId, setEditingChartId] = useState<string | null>(null);
 
   const handleSave = () => {
-    console.log("Saving dashboard:", { title, description, sections, charts });
+    console.log("Saving dashboard:", { title, description, charts });
     alert("Dashboard saved successfully!");
     navigate("/admin/dashboard-manager");
   };
@@ -116,21 +114,14 @@ export default function DashboardBuilder() {
       chartConfig: { showLegend: true, showTooltip: false },
     };
     setCharts([...charts, newChart]);
-
-    const newSection: DashboardSection = {
-      id: `s${Date.now()}`,
-      type: "chart",
-      chartId: newChartId,
-      title: "New Chart",
-      width: "full",
-      order: sections.length + 1,
-    };
-    setSections([...sections, newSection]);
+    setEditingChartId(newChartId);
   };
 
   const deleteChart = (chartId: string) => {
     setCharts(charts.filter((c) => c.id !== chartId));
-    setSections(sections.filter((s) => s.chartId !== chartId));
+    if (editingChartId === chartId) {
+      setEditingChartId(null);
+    }
   };
 
   const updateChart = (chartId: string, updates: Partial<ChartData>) => {
@@ -228,11 +219,10 @@ export default function DashboardBuilder() {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="layout">Layout</TabsTrigger>
-            <TabsTrigger value="charts">Chart Editor</TabsTrigger>
+        <Tabs defaultValue={editingChartId ? "charts" : "basic"} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="basic">Dashboard Info</TabsTrigger>
+            <TabsTrigger value="charts">Charts</TabsTrigger>
           </TabsList>
 
           {/* Basic Info */}
@@ -262,53 +252,60 @@ export default function DashboardBuilder() {
             </Card>
           </TabsContent>
 
-          {/* Layout */}
-          <TabsContent value="layout" className="space-y-6">
-            <Card className="p-6 border border-border">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold">Dashboard Sections</h3>
-                <Button onClick={addChart} className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Add Chart
-                </Button>
-              </div>
 
-              <div className="space-y-3">
-                {sections.map((section) => {
-                  const chart = charts.find((c) => c.id === section.chartId);
-                  return (
-                    <div key={section.id} className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-secondary/50">
-                      <GripVertical className="w-5 h-5 text-muted-foreground cursor-grab" />
-                      <div className="flex-1">
-                        <p className="font-medium">{chart?.title || "Unknown Chart"}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {chartTypes.find((t) => t.id === chart?.type)?.label} • {section.width}
-                        </p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingChartId(section.chartId || "")}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => deleteChart(section.chartId || "")}
-                        className="text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-          </TabsContent>
-
-          {/* Chart Editor */}
+          {/* Charts Tab */}
           <TabsContent value="charts" className="space-y-6">
+            {/* Charts List */}
+            {!editingChartId && (
+              <Card className="p-6 border border-border">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold">Dashboards Charts</h3>
+                  <Button onClick={addChart} className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Add Chart
+                  </Button>
+                </div>
+
+                {charts.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">
+                    No charts yet. Click "Add Chart" to create one.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {charts.map((chart) => (
+                      <div
+                        key={chart.id}
+                        className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-secondary/50"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium">{chart.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {chartTypes.find((t) => t.id === chart.type)?.label} • {chart.fields.length} fields
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingChartId(chart.id)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => deleteChart(chart.id)}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            )}
+
+            {/* Chart Editor */}
             {editingChartId && currentChart ? (
               <Card className="p-6 border border-border space-y-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
@@ -422,40 +419,78 @@ export default function DashboardBuilder() {
                               value={field.source}
                               onChange={(e) =>
                                 updateField(currentChart.id, field.id, {
-                                  source: e.target.value,
+                                  source: e.target.value as any,
                                 })
                               }
                               className="w-full mt-1 px-2 py-1 border border-border rounded text-sm bg-background"
                             >
-                              <option value="">Select source...</option>
-                              {dataSourceOptions.map((opt) => (
-                                <option key={opt.id} value={opt.id}>
-                                  {opt.label}
-                                </option>
-                              ))}
+                              <option value="auto">From Test Variable</option>
+                              <option value="manual">Manual Override</option>
                             </select>
                           </div>
                         </div>
 
-                        <div>
-                          <label className="text-xs font-medium">
-                            Calculation (optional)
-                          </label>
-                          <Input
-                            placeholder="e.g., 100 - (value * 100 / 2)"
-                            value={field.calculation || ""}
-                            onChange={(e) =>
-                              updateField(currentChart.id, field.id, {
-                                calculation: e.target.value,
-                              })
-                            }
-                            size={1}
-                            className="mt-1 text-sm"
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Use 'value' as the test result variable
-                          </p>
-                        </div>
+                        {field.source === "auto" ? (
+                          <>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-xs font-medium">Test Source</label>
+                                <select
+                                  value={field.sourceTest || ""}
+                                  onChange={(e) =>
+                                    updateField(currentChart.id, field.id, {
+                                      sourceTest: e.target.value,
+                                    })
+                                  }
+                                  className="w-full mt-1 px-2 py-1 border border-border rounded text-sm bg-background"
+                                >
+                                  <option value="">Select test...</option>
+                                  {dataSourceOptions.map((opt) => (
+                                    <option key={opt.id} value={opt.id}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium">
+                                  Calculation (optional)
+                                </label>
+                                <Input
+                                  placeholder="e.g., 100 - (value * 100 / 2)"
+                                  value={field.calculation || ""}
+                                  onChange={(e) =>
+                                    updateField(currentChart.id, field.id, {
+                                      calculation: e.target.value,
+                                    })
+                                  }
+                                  size={1}
+                                  className="mt-1 text-sm"
+                                />
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Use 'value' as the test result variable in calculations
+                            </p>
+                          </>
+                        ) : (
+                          <div>
+                            <label className="text-xs font-medium">Manual Value</label>
+                            <Input
+                              type="number"
+                              placeholder="Enter number"
+                              value={field.manualValue || ""}
+                              onChange={(e) =>
+                                updateField(currentChart.id, field.id, {
+                                  manualValue: e.target.value ? parseFloat(e.target.value) : undefined,
+                                })
+                              }
+                              step="0.1"
+                              size={1}
+                              className="mt-1 text-sm"
+                            />
+                          </div>
+                        )}
 
                         <div className="flex justify-end">
                           <Button
@@ -494,16 +529,7 @@ export default function DashboardBuilder() {
                   </label>
                 </div>
               </Card>
-            ) : (
-              <Card className="p-12 border border-border text-center">
-                <p className="text-muted-foreground mb-4">
-                  Select a chart from the Layout tab to edit it
-                </p>
-                <Button onClick={() => setActiveTab("layout")} variant="outline">
-                  Go to Layout
-                </Button>
-              </Card>
-            )}
+            ) : null}
           </TabsContent>
         </Tabs>
 
